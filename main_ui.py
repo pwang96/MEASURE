@@ -106,15 +106,15 @@ class MainUI(QObject):
         self.ui.balNameCombo.setCurrentIndex(2)
 
         # Activate the event handlers
-        self.handler_connector()
+        self.callback_connector()
 
         # Display the main UI
         window.show()
 
-    def quit_slot():
+    def quit_slot(self):
         app.quit()
 
-    def handler_connector(self):
+    def callback_connector(self):
         """ Activate event detection"""
         self.ui.balNameCombo.activated.connect(self.activate_balance)
         self.ui.designCombo.activated.connect(self.activate_design)

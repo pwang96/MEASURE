@@ -3,3 +3,4 @@ testing/
 not_used/
 *.exe
 *.pyc
+nist_config.py

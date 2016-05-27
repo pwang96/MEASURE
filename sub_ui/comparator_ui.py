@@ -99,13 +99,8 @@ class ComparatorUi(QObject):
         self.environment_timer.start(10000)
         self.update_environment_table()
 
-        # Connect the event handlers
-        self.connect_handles()
-
-        # Define signals & slots
-        self.status_signal.connect(self.status_slot)
-        self.data_signal.connect(self.cal_data_slot)
-        self.progress_signal.connect(self.progress_slot)
+        # Connect the event callbacks
+        self.callback_connector()
 
         # Initialize dictionaries
         self.flags = {'connection': 0, 'settings': 0}
@@ -185,9 +180,10 @@ class ComparatorUi(QObject):
                         self.run += 1
                         if self.run >= len(runs):
                             self.status_signal.emit('Calibration complete!')
+                            self.environment_timer.stop()
                     return
 
-    def connect_handles(self):
+    def callback_connector(self):
         """ Activate event detection """
         self.ui.connectButton.clicked.connect(self.click_connect_bal)
         self.ui.disconnectButton.clicked.connect(self.click_disconnect_bal)
@@ -195,6 +191,10 @@ class ComparatorUi(QObject):
         self.ui.stopCalButton.clicked.connect(self.click_stop)
         self.ui.SettingsButton.clicked.connect(self.click_settings)
         self.ui.exitButton.clicked.connect(self.click_exit)
+        self.status_signal.connect(self.status_slot)
+        self.data_signal.connect(self.cal_data_slot)
+        self.progress_signal.connect(self.progress_slot)
+
         QtCore.QObject.connect(self.environment_timer, QtCore.SIGNAL("timeout()"), self.update_environment_table)
 
     def update_widgets(self):
@@ -289,10 +289,10 @@ class ComparatorUi(QObject):
 
         # TODO: implement settings loading functionality using .json files generated here
         # save dictionaries in JSON format
-        with open(self.input_file_path + '_main.json', 'w+') as fp_1:
-            json.dump(self.main_dict, fp_1)
-        with open(self.input_file_path + '_settings.json', 'w+') as fp_2:
-            json.dump(self.settings_dict, fp_2)
+        # with open(self.input_file_path + '_main.json', 'w+') as fp_1:
+        #     json.dump(self.main_dict, fp_1)
+        # with open(self.input_file_path + '_settings.json', 'w+') as fp_2:
+        #     json.dump(self.settings_dict, fp_2)
 
         # Use recipe maker to generate list of methods and method arguments
         rm = RecipeMaker(self.status_signal,
@@ -333,7 +333,7 @@ class ComparatorUi(QObject):
         self.__exit__()
 
     def __exit__(self):
-        self.enviro_timer.stop()
+        self.environment_timer.stop()
         self.window.close()
 
 

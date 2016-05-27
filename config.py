@@ -1,21 +1,22 @@
 __author__ = 'masslab'
 
+from nist_config import *
 
 # Name and software version
 software_name = "MEASURE 0.2"
 
 # Database login
-db_usr = 'username'
-db_pwd = 'passowrd'
-db_host_server = 'hostname'
-db_schema = 'schema'
+db_usr = nist_db_usr
+db_pwd = nist_db_pwd
+db_host_server = nist_db_host_server
+db_schema = nist_db_schema
 
 # This identifies the mass code path
-masscode_path = r'Path'
+masscode_path = nist_masscode_path
 
 # This identifies the base path the program will use to when prompting the
 # user for input file directory
-base_path = r'Path'
+base_path = nist_base_path
 
 # Good balance response strings
 good_responses = ['OK\r\n',

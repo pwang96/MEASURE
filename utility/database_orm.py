@@ -2,7 +2,8 @@ __author__ = 'masslab'
 
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, Text
 from sqlalchemy.sql import select, text
-from config import db_usr, db_pwd, db_host_server, db_schema
+# from config import db_usr, db_pwd, db_host_server, db_schema
+from nist_config import nist_db_usr, nist_db_pwd, nist_db_host_server, nist_db_schema
 
 
 
@@ -25,11 +26,11 @@ class DatabaseORM:
     """
     def __init__(self):
         # Generate engine and session class for calibrations_v2 schema
-        self.engine = create_engine("mysql://%s:%s@%s/%s" % (db_usr, db_pwd, db_host_server, db_schema), echo=False)
+        self.engine = create_engine("mysql://%s:%s@%s/%s" % (nist_db_usr, nist_db_pwd, nist_db_host_server, nist_db_schema), echo=False)
 
         # Reflect the database schema to a python object
         meta = MetaData()
-        self.meta = meta.reflect(bind=self.engine)
+        meta.reflect(bind=self.engine)
 
         # Siphon out individual tables from database to python objects
         # Tables: Equipment

@@ -74,7 +74,7 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
         input_file.write("END\n")
         input_file.write("\n")
         input_file.write("GRAVITY GRADIENT 0.000000002665\n")
-        for i in range(len( main_dict['cg differences'])):
+        for i in range(len(main_dict['cg differences'])):
             input_file.write("CENTER OF GRAVITY HEIGHT DIFFERENCE %s %s\n" % (str(i+1), main_dict['cg differences'][i]))
         input_file.write("\n")
         for i in range(len(main_dict['addon info'])):

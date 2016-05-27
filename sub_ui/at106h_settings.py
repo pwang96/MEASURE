@@ -5,7 +5,9 @@ from sub_ui.error_message import ErrorMessage
 
 
 class AT106HSettings:
-    """ Specific balance and run settings user interface """
+    """ Specific balance and run settings user interface
+        Each balance will need a unique settings ui
+    """
     def __init__(self):
         self.window = QtGui.QDialog()
         self.ui = uic.loadUi('sub_ui/AT106H_Settings.ui', self.window)
