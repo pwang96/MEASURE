@@ -19,7 +19,7 @@ def populate_table_widget(cls):
     cls.ui.weightTable.setRowCount(m)
 
     # Populate Table one row at at time
-    for n in range(0, m):
+    for n in range(m):
 
         # clear row
         for n2 in range(0, int(cls.ui.weightTable.columnCount())):

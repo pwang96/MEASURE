@@ -1,6 +1,7 @@
 __author__ = 'masslab'
 
 import sys
+import re
 from threading import Thread
 from Queue import Queue
 from PyQt4 import QtGui, uic
@@ -15,6 +16,12 @@ from sub_ui.error_message import ErrorMessage
 from sub_ui.login import LoginUi
 from populate_ui import PopulateUI
 from populate_dictionary import populate_dictionary
+# ------------------------------------------------------------------------------------------------------
+from plots.control_chart import ControlChart
+from plots.Environmentals import Environmentals
+from populate_ui.populate_db_access import populate_db_access
+from sub_ui.add_weight_ui import AddWeightUI
+# ------------------------------------------------------------------------------------------------------
 
 
 try:
@@ -81,7 +88,10 @@ class MainUI(QObject):
                  'restraint type b': None,
                  'check between': None,
                  'units': None,
-                 'user id': None}
+                 'user id': None,
+                 #------------------------------------------------
+                 'index': None}
+                 #------------------------------------------------
 
     quit_signal = pyqtSignal(int)
 
@@ -89,7 +99,7 @@ class MainUI(QObject):
         super(QObject, self).__init__()
         window.setWindowIcon(QtGui.QIcon('Masses.png'))
         window.setWindowTitle(software_name)
-        self.ui = uic.loadUi(r'\\elwood.nist.gov\68_PML\684\users\masslab\My Documents\PycharmProjects\MEASURE\main.ui', window)
+        self.ui = uic.loadUi(r'L:\internal\684.07\Mass_Project\Software\PythonProjects\measure\main.ui', window)
 
         self.quit_signal.connect(self.quit_slot)
 
@@ -98,12 +108,14 @@ class MainUI(QObject):
         self.login()
 
         # Populate the menus within the main UI via the database
-        self.populate_ui = PopulateUI(self)
+        self.populate_ui = PopulateUI(self)  # CALIBRATION TAB: Populates the balance combo box, weight list, enviro list
 
         self.input_file_queue = Queue()
 
+
         # Temporary testing config
         self.ui.balNameCombo.setCurrentIndex(2)
+        self.ui.chooseEnviroCombo.setCurrentIndex(0)
 
         # Activate the event handlers
         self.callback_connector()
@@ -121,6 +133,21 @@ class MainUI(QObject):
         self.ui.inputButton.clicked.connect(self.click_input)
         self.ui.masscodeButton.clicked.connect(self.click_masscode)
         self.ui.configBalButton.clicked.connect(self.click_config_bal)
+
+# -------------------------------------------------------------------------------------------------------------------------
+
+        self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Browsing Output files
+        self.ui.controlChartRadio.toggled.connect(self.checked_control_chart)  # Control Chart
+        self.ui.weightList.itemActivated.connect(self.draw_control_chart)
+        self.ui.chooseEnviroCombo.activated.connect(self.get_apparati)  # Environmentals
+        self.ui.enviroList.itemActivated.connect(self.draw_environmentals)
+        self.ui.externalWeightRadio.toggled.connect(self.checked_external_weights)  # Database access
+        self.ui.thermometerRadio.toggled.connect(self.checked_thermometers)
+        self.ui.hygrometerRadio.toggled.connect(self.checked_hygrometers)
+        self.ui.barometerRadio.toggled.connect(self.checked_barometers)
+        self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
+
+# -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
 
     def widget_handler(self, arg):
@@ -140,6 +167,61 @@ class MainUI(QObject):
         self.main_dict['user id'] = login.ident
         if login.ident == None:
             app.quit()
+
+# -------------------------------------------------------------------------------------------------------------------------
+    def click_browse(self):
+        """ Opens a browser to look for files to parse and graph"""
+        file_dialog = QtGui.QFileDialog()
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", base_path, "*.ntxt")
+        self.ui.outputList.addItems(file_names)
+
+    def checked_control_chart(self):
+        """Populates the list of weights whose history can be graphed"""
+        weight_list = self.db.get_all_weights()
+        self.ui.weightList.clear()
+        self.ui.weightList.addItems(weight_list)
+
+    def draw_control_chart(self):
+        """ """
+        weight_name = self.ui.weightList.currentItem().text()
+        self.controlChart = ControlChart(self, weight_name)
+        self.ui.plotArea.addSubWindow(self.controlChart).setWindowTitle("Control Chart")
+        self.controlChart.show()
+
+    def get_apparati(self):
+        """After the user selects which environmental data to plot, populate the list with the different apparati"""
+        (apparatus_names, apparatus_ids, apparatus_serial) = self.db.get_apparati(self.ui.chooseEnviroCombo.currentText())
+        name_and_serial = [str(a)+ ' ' + str(b) for a, b in zip(apparatus_names, apparatus_serial)]
+        self.main_dict['index'] = dict(zip(name_and_serial, apparatus_ids))
+        self.ui.enviroList.clear()
+        self.ui.enviroList.addItems([str(a)+', serial: '+str(b) for a, b in zip(apparatus_names, apparatus_serial)])
+
+    def draw_environmentals(self):
+        """ Draws the environmental data, look in plots/Environmentals.py"""
+        apparatus_name = self.ui.enviroList.currentItem().text()
+        regex = r'(.*), serial: (\w*)'
+        apparatus_name, apparatus_serial = str(re.findall(regex, apparatus_name)[0][0]), str(re.findall(regex, apparatus_name)[0][1])
+        apparatus_id = self.main_dict['index'][str(apparatus_name)+' '+str(apparatus_serial)]
+        environment_type = self.ui.chooseEnviroCombo.currentText()
+        self.environmentals = Environmentals(self, environment_type, apparatus_name, apparatus_id, apparatus_serial)
+        self.ui.plotArea.addSubWindow(self.environmentals).setWindowTitle("%s Graph" % (environment_type))
+        self.environmentals.show()
+
+    def checked_external_weights(self):
+        populate_db_access(self, 'weights_external')
+
+    def checked_thermometers(self):
+        populate_db_access(self, 'thermometers')
+
+    def checked_hygrometers(self):
+        populate_db_access(self, 'hygrometers')
+
+    def checked_barometers(self):
+        populate_db_access(self, 'barometers')
+
+    def click_edit_weights(self):
+        AddWeightUI(self.db)
+# -------------------------------------------------------------------------------------------------------------------------
 
     def click_config_bal(self):
         """ Populate main_dict with selected items and call the comparator user interface """

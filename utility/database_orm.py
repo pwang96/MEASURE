@@ -1,7 +1,8 @@
 __author__ = 'masslab'
 
+import datetime
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, Text
-from sqlalchemy.sql import select, text
+from sqlalchemy.sql import select, text, insert, update
 # from config import db_usr, db_pwd, db_host_server, db_schema
 from nist_config import nist_db_usr, nist_db_pwd, nist_db_host_server, nist_db_schema
 
@@ -331,3 +332,101 @@ class DatabaseORM:
                    'and b.type = "%s" '
                    'and a.positions <= %s' % (str(bal_type), str(positions)))
         return [str(r[0]) + ' | ' + r[1] for r in self.engine.execute(sql)]
+
+# -------------------------------------------------------------------------------------------------------------------------
+    def get_all_weights(self):
+        """ Return a lst of all weights"""
+
+        sql = select([self.weights_internal.c.weight_name]).distinct().order_by(self.weights_internal.c.weight_name)
+        return [r[0] for r in self.engine.execute(sql)]
+
+    def get_weight_history(self, name):
+        """Gets all the accepted values of the weight. NEEDS TO BE FIXED FOR CORRECT DATABASE"""
+
+        sql = select([self.weights_internal_history.c.timestamp, self.weights_internal_history.c.accepted]).\
+            where(self.weights_internal_history.c.weight_name == name).\
+            order_by(self.weights_internal_history.c.timestamp)
+        return [datetime.datetime.strptime(str(r[0]), '%Y-%m-%d %H:%M:%S') for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)]
+
+    def get_apparati(self, enviroType):
+        """ Gets all the apparati for the selected environment data to graph"""
+
+        if enviroType == "Temperature":
+            sql = select([self.thermometers.c.model, self.thermometers.c.id, self.thermometers.c.probe]).\
+                order_by(self.thermometers.c.id)
+            return [str(r[0]) for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)], [str(r[2]) for r in self.engine.execute(sql)]
+
+        if enviroType == "Pressure":
+            sql = select([self.barometers.c.model, self.barometers.c.id, self.barometers.c.serial]).\
+                distinct(self.barometers.c.serial)
+            return [str(r[0]) for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)], [str(r[2]) for r in self.engine.execute(sql)]
+
+        if enviroType == "Humidity":
+            sql = select([self.hygrometers.c.model, self.hygrometers.c.id, self.hygrometers.c.serial])
+            return [str(r[0]) for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)], [str(r[2]) for r in self.engine.execute(sql)]
+
+    def get_all_temps(self, id):
+        """Gets all the temperature readings and dates"""
+
+        sql = select([self.thermometers_data.c.timestamp, self.thermometers_data.c.temperature]).\
+            where(self.thermometers_data.c.thermometer_id == id).\
+            order_by(self.thermometers_data.c.timestamp)
+        return [datetime.datetime.strptime(str(r[0]), '%Y-%m-%d %H:%M:%S') for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)]
+
+    def get_all_humid(self, id):
+        """Gets all the humidity readings and dates"""
+
+        sql = select([self.hygrometers_data.c.timestamp, self.hygrometers_data.c.humidity]).\
+            where(self.hygrometers_data.c.hygrometer_id == id).\
+            order_by(self.hygrometers_data.c.timestamp)
+        return [datetime.datetime.strptime(str(r[0]), '%Y-%m-%d %H:%M:%S') for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)]
+
+    def get_all_press(self, id):
+        """Gets all the pressure readings and dates"""
+
+        sql = select([self.barometers_data.c.timestamp, self.barometers_data.c.pressure]).\
+            where(self.barometers_data.c.barometer_id == id).\
+            order_by(self.barometers_data.c.timestamp)
+        return [datetime.datetime.strptime(str(r[0]), '%Y-%m-%d %H:%M:%S') for r in self.engine.execute(sql)], [str(r[1]) for r in self.engine.execute(sql)]
+
+    def populate_db_access(self, type):
+        """Gets the values of everything in the table and populates the db access table"""
+
+        if type == 'weights_external':
+            sql = text('SELECT id, '
+                       'serial_number, '
+                       'weight_name, '
+                       'units, '
+                       'nominal, '
+                       'customer_name, '
+                       'density, '
+                       'density_uncert , '
+                       'volumetric_exp, '
+                       'comment '
+                       'FROM weights_external '
+                       'ORDER BY id ')
+
+            return self.engine.execute(sql).fetchall()
+
+        else:
+            sql = text('SELECT id, '
+                       'model, '
+                       'serial, '
+                       'probe, '
+                       'room, '
+                       'coeff_a ,'
+                       'coeff_b , '
+                       'coeff_c , '
+                       'uncertainty,'
+                       'calibration_date,'
+                       'baudrate , '
+                       'parity,'
+                       'bytesize ,'
+                       'stopbits ,'
+                       'timeout '
+                       'FROM %s '
+                       'ORDER BY id ' % type)
+        return self.engine.execute(sql).fetchall()
+
+    def add_weight(self, dict):
+        pass

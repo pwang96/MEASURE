@@ -49,8 +49,13 @@ p, li { white-space: pre-wrap; }
     </item>
     <item>
      <widget class="QTabWidget" name="tabWidget">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -109,93 +114,6 @@ p, li { white-space: pre-wrap; }
            <string>Weight setup</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="4" column="0">
-            <widget class="QTreeWidget" name="weightTree">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <column>
-              <property name="text">
-               <string notr="true">1</string>
-              </property>
-             </column>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Balance</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QComboBox" name="balNameCombo"/>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Instrument station</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1" colspan="3">
-            <widget class="QTableWidget" name="weightTable">
-             <property name="columnCount">
-              <number>13</number>
-             </property>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-             <column/>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Weighing design</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QComboBox" name="designCombo">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>200</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="0" colspan="4">
             <widget class="QTableWidget" name="enviroTable">
              <property name="sizePolicy">
@@ -284,6 +202,93 @@ p, li { white-space: pre-wrap; }
              </column>
             </widget>
            </item>
+           <item row="4" column="0">
+            <widget class="QTreeWidget" name="weightTree">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <column>
+              <property name="text">
+               <string notr="true">1</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Balance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="balNameCombo"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Instrument station</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Weighing design</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QComboBox" name="designCombo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1" colspan="3">
+            <widget class="QTableWidget" name="weightTable">
+             <property name="columnCount">
+              <number>13</number>
+             </property>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+             <column/>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -370,7 +375,7 @@ p, li { white-space: pre-wrap; }
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_14">
            <item>
-            <widget class="QPushButton" name="outputButton">
+            <widget class="QPushButton" name="outputBrowseButton">
              <property name="text">
               <string>Browse...</string>
              </property>
@@ -388,9 +393,6 @@ p, li { white-space: pre-wrap; }
            </item>
           </layout>
          </widget>
-        </item>
-        <item row="0" column="1" rowspan="3">
-         <widget class="QMdiArea" name="plotArea"/>
         </item>
         <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox_6">
@@ -413,41 +415,19 @@ p, li { white-space: pre-wrap; }
              <item row="1" column="0">
               <layout class="QVBoxLayout" name="verticalLayout_13">
                <item>
-                <widget class="QRadioButton" name="tempRadio">
-                 <property name="text">
-                  <string>Temperature</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QRadioButton" name="pressRadio">
-                 <property name="text">
-                  <string>Pressure</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QRadioButton" name="humidRadio">
-                 <property name="text">
-                  <string>Humidity</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QRadioButton" name="radioButton">
-                 <property name="text">
-                  <string>Std dev</string>
-                 </property>
-                </widget>
+                <widget class="QComboBox" name="chooseEnviroCombo"/>
                </item>
               </layout>
              </item>
              <item row="0" column="0">
-              <widget class="QRadioButton" name="weightRadio">
+              <widget class="QRadioButton" name="controlChartRadio">
                <property name="text">
-                <string>Weight</string>
+                <string>Control Chart</string>
                </property>
               </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QListWidget" name="enviroList"/>
              </item>
             </layout>
            </item>
@@ -476,7 +456,112 @@ p, li { white-space: pre-wrap; }
           </layout>
          </widget>
         </item>
+        <item row="0" column="1" rowspan="3">
+         <widget class="QMdiArea" name="plotArea"/>
+        </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="tab_5">
+       <attribute name="title">
+        <string>DB Access</string>
+       </attribute>
+       <widget class="QTableWidget" name="dbTable">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>921</width>
+          <height>391</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="dbViewBox">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>400</y>
+          <width>921</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Select the database to view</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QRadioButton" name="externalWeightRadio">
+             <property name="text">
+              <string>External Weights</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="thermometerRadio">
+             <property name="text">
+              <string>Thermometers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="hygrometerRadio">
+             <property name="text">
+              <string>Hygrometers</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="barometerRadio">
+             <property name="text">
+              <string>Barometers</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="horizontalLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>465</y>
+          <width>901</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="editWeightButton">
+           <property name="text">
+            <string>Edit Weights</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editThermometerButton">
+           <property name="text">
+            <string>Edit Thermometers</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editHygrometerButton">
+           <property name="text">
+            <string>Edit Hygrometers</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editBarometerButton">
+           <property name="text">
+            <string>Edit Barometers</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">

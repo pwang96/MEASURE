@@ -1,5 +1,6 @@
 __author__ = 'masslab'
 
+
 def pretty_statusbrowser(browser, d, indent=0):
     for key, value in d.iteritems():
         browser.append('\t' * indent + str(key))

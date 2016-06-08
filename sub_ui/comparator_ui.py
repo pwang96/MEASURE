@@ -155,9 +155,10 @@ class ComparatorUi(QObject):
                     pretty(self.data_dict, indent=1)
                     if self.is_end_of_run():
                         run_number = int(re.findall(r'[\d]+', runs[self.run])[0])
+                        
                         # TEMPORARY CODE, saves main dictionary for debugging purposes
                         # ---------------------------------------------------------
-                        with open('data_dict_%s.json' % str(run_number), 'w+') as fp:
+                        with open('%s/data_dict_%s.json' % (base_path, str(run_number)), 'w+') as fp:
                             json.dump(self.data_dict, fp)
                         # ---------------------------------------------------------
                         input_file = generate_input_file(self.input_file_path,
@@ -278,7 +279,8 @@ class ComparatorUi(QObject):
         """ Run the list of methods generated in "RecipeMaker" in a new thread.
 
         Prompts user to select a directory and calibration name.  Instantiates the recipe maker, extracts the recipe
-        "m" and data dictionary "data_dict".  Runs "execute" in new thread, so balance method execution does
+        "m" and data dictionary "data_dict"
+.  Runs "execute" in new thread, so balance method execution does
         not interfere with the ui.
         """
         if not all(self.flags.values()):
