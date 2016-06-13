@@ -36,6 +36,7 @@ class DatabaseORM:
         # Siphon out individual tables from database to python objects
         # Tables: Equipment
         self.balances = Table("balances", meta)
+        self.manual_balances = Table("manual_balances", meta)
         self.barometers = Table("barometers", meta)
         self.hygrometers = Table("hygrometers", meta)
         self.thermometers = Table("thermometers", meta)
@@ -314,7 +315,6 @@ class DatabaseORM:
         """ Return list of balance ids, names of form: "id | balance" """
         sql = select([self.balances.c.id,
                       self.balances.c.name]).\
-            where(self.stations.c.balance_id == self.balances.c.id).\
             order_by(self.balances.c.id)
         return [str(r[0]) + " | " + r[1] for r in self.engine.execute(sql)]
 
@@ -408,6 +408,38 @@ class DatabaseORM:
 
             return self.engine.execute(sql).fetchall()
 
+        elif type == 'stations':
+            sql = text('SELECT id, '
+                       'balance_id, '
+                       'thermometer_id, '
+                       'barometer_id, '
+                       'hygrometer_id, '
+                       'name, '
+                       'building, '
+                       'room '
+                       'FROM stations '
+                       'ORDER BY id ')
+
+            return self.engine.execute(sql).fetchall()
+
+        elif type == 'balances':
+            sql = text('SELECT id, '
+                       'name, '
+                       'load_max, '
+                       'resolution, '
+                       'type, '
+                       'positions, '
+                       'within, '
+                       'baudrate , '
+                       'parity, '
+                       'bytesize, '
+                       'stopbits, '
+                       'timeout '
+                       'FROM balances '
+                       'ORDER BY id ')
+
+            return self.engine.execute(sql).fetchall()
+
         else:
             sql = text('SELECT id, '
                        'model, '
@@ -429,4 +461,67 @@ class DatabaseORM:
         return self.engine.execute(sql).fetchall()
 
     def add_weight(self, dict):
-        pass
+
+        table = self.weights_external.insert()
+        self.engine.execute(table.values(weight_name=dict["weightName"],
+                            units=dict["units"],
+                            nominal=dict["nominal"],
+                            customer_name=dict["custName"],
+                            density=dict["density"],
+                            density_uncert=dict["uncert"],
+                            volumetric_exp=dict["vol"],
+                            comment=dict["comments"]))
+
+    def get_thermometers(self):
+        # Used in Edit Balances UI, populate_enviro_tree for Edit Meters UI
+        sql = select([self.thermometers.c.id, self.thermometers.c.model, self.thermometers.c.probe]). \
+            order_by(self.thermometers.c.id)
+        return [str(r[0]) + '|' + str(r[1]) + '|' + str(r[2]) for r in self.engine.execute(sql)]
+
+    def get_barometers(self):
+        sql = select([self.barometers.c.id, self.barometers.c.model, self.barometers.c.serial]). \
+            order_by(self.barometers.c.id)
+        return [str(r[0]) + '|' + str(r[1]) + '|' + str(r[2]) for r in self.engine.execute(sql)]
+
+    def get_hygrometers(self):
+        sql = select([self.hygrometers.c.id, self.hygrometers.c.model, self.hygrometers.c.serial]). \
+            order_by(self.hygrometers.c.id)
+        return [str(r[0]) + '|' + str(r[1]) + '|' + str(r[2]) for r in self.engine.execute(sql)]
+
+    def update_machines(self, type, probe, dict):
+        if type == 'Thermometers':
+            table = self.thermometers.update()
+            self.engine.execute(table.values(coeff_a=dict['a'],
+                                             coeff_b=dict['b'],
+                                             coeff_c=dict['c'],
+                                             uncertainty=dict['uncert'],
+                                             calibration_date=dict['date']).
+                                where(self.thermometers.c.probe==probe))
+
+        elif type == 'Barometers':
+            table = self.barometers.update()
+            self.engine.execute(table.values(coeff_a=dict['a'],
+                                             coeff_b=dict['b'],
+                                             coeff_c=dict['c'],
+                                             uncertainty=dict['uncert'],
+                                             calibration_date=dict['date']).
+                                where(self.barometers.c.serial == probe))
+
+        elif type == 'Hygrometers':
+            table = self.hygrometers.update()
+            self.engine.execute(table.values(coeff_a=dict['a'],
+                                             coeff_b=dict['b'],
+                                             coeff_c=dict['c'],
+                                             uncertainty=dict['uncert'],
+                                             calibration_date=dict['date']).
+                                where(self.hygrometers.c.serial == probe))
+
+    def update_stations(self, dict):
+        # Called when edit balances is called and Apply is clicked. Changes the
+        # environmental machines associated with the balance in the stations table
+
+        table = self.stations.update()
+        self.engine.execute(table.values(thermometer_id=dict['thermometer_id'],
+                                         barometer_id=dict['barometer_id'],
+                                         hygrometer_id=dict['hygrometer_id']).
+                            where(self.stations.c.balance_id == dict['balance_id']))

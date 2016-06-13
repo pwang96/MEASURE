@@ -48,7 +48,7 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="manWeightTree">
       <property name="font">
        <font>
         <pointsize>10</pointsize>
@@ -90,6 +90,13 @@ p, li { white-space: pre-wrap; }
             <widget class="QPushButton" name="configBalButton">
              <property name="text">
               <string>Configure balance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="configManBalButton">
+             <property name="text">
+              <string>Configure Manual balance</string>
              </property>
             </widget>
            </item>
@@ -491,6 +498,20 @@ p, li { white-space: pre-wrap; }
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
+            <widget class="QRadioButton" name="stationRadio">
+             <property name="text">
+              <string>Stations</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="balanceRadio">
+             <property name="text">
+              <string>Balances</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QRadioButton" name="externalWeightRadio">
              <property name="text">
               <string>External Weights</string>
@@ -533,40 +554,35 @@ p, li { white-space: pre-wrap; }
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
+          <widget class="QPushButton" name="addStationButton">
+           <property name="text">
+            <string>Add Stations</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editStationButton">
+           <property name="text">
+            <string>Edit Stations</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="editWeightButton">
            <property name="text">
-            <string>Edit Weights</string>
+            <string>Add Weights</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="editThermometerButton">
+          <widget class="QPushButton" name="editMachinesButton">
            <property name="text">
-            <string>Edit Thermometers</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editHygrometerButton">
-           <property name="text">
-            <string>Edit Hygrometers</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editBarometerButton">
-           <property name="text">
-            <string>Edit Barometers</string>
+            <string>Edit Machines</string>
            </property>
           </widget>
          </item>
         </layout>
        </widget>
-      </widget>
-      <widget class="QWidget" name="tab_4">
-       <attribute name="title">
-        <string>Stations</string>
-       </attribute>
       </widget>
      </widget>
     </item>

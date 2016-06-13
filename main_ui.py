@@ -21,6 +21,9 @@ from plots.control_chart import ControlChart
 from plots.Environmentals import Environmentals
 from populate_ui.populate_db_access import populate_db_access
 from sub_ui.add_weight_ui import AddWeightUI
+from sub_ui.edit_meters_ui import EditMetersUI
+from sub_ui.manual_balance_ui import ManualBalanceUI
+from sub_ui.edit_stations_ui import EditStationUI
 # ------------------------------------------------------------------------------------------------------
 
 
@@ -109,6 +112,8 @@ class MainUI(QObject):
 
         # Populate the menus within the main UI via the database
         self.populate_ui = PopulateUI(self)  # CALIBRATION TAB: Populates the balance combo box, weight list, enviro list
+                                             # MANUAL BALANCE TAB: Also populates the balance combo box, design list,
+                                             # weight list in the manual balance tab
 
         self.input_file_queue = Queue()
 
@@ -137,15 +142,25 @@ class MainUI(QObject):
 # -------------------------------------------------------------------------------------------------------------------------
 
         self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Browsing Output files
+
         self.ui.controlChartRadio.toggled.connect(self.checked_control_chart)  # Control Chart
         self.ui.weightList.itemActivated.connect(self.draw_control_chart)
+
         self.ui.chooseEnviroCombo.activated.connect(self.get_apparati)  # Environmentals
         self.ui.enviroList.itemActivated.connect(self.draw_environmentals)
-        self.ui.externalWeightRadio.toggled.connect(self.checked_external_weights)  # Database access
+
+        self.ui.balanceRadio.toggled.connect(self.checked_balances)  # Database access
+        self.ui.stationRadio.toggled.connect(self.checked_stations)
+        self.ui.externalWeightRadio.toggled.connect(self.checked_external_weights)
         self.ui.thermometerRadio.toggled.connect(self.checked_thermometers)
         self.ui.hygrometerRadio.toggled.connect(self.checked_hygrometers)
         self.ui.barometerRadio.toggled.connect(self.checked_barometers)
+        self.ui.addStationButton.clicked.connect(self.click_add_stations)
+        self.ui.editStationButton.clicked.connect(self.click_edit_stations)
         self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
+        self.ui.editMachinesButton.clicked.connect(self.click_edit_machines)
+
+        self.ui.configManBalButton.clicked.connect(self.click_manual_go)  # Manual Balance
 
 # -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
@@ -207,6 +222,12 @@ class MainUI(QObject):
         self.ui.plotArea.addSubWindow(self.environmentals).setWindowTitle("%s Graph" % (environment_type))
         self.environmentals.show()
 
+    def checked_stations(self):
+        populate_db_access(self, 'stations')
+
+    def checked_balances(self):
+        populate_db_access(self, 'balances')
+
     def checked_external_weights(self):
         populate_db_access(self, 'weights_external')
 
@@ -219,8 +240,20 @@ class MainUI(QObject):
     def checked_barometers(self):
         populate_db_access(self, 'barometers')
 
+    def click_add_stations(self):
+        pass
+
+    def click_edit_stations(self):
+        EditStationUI(self.db)
+
     def click_edit_weights(self):
         AddWeightUI(self.db)
+
+    def click_edit_machines(self):
+        EditMetersUI(self)
+
+    def click_manual_go(self):
+        ManualBalanceUI(self.main_dict, self.db)
 # -------------------------------------------------------------------------------------------------------------------------
 
     def click_config_bal(self):

@@ -37,6 +37,26 @@ weights_columns = ['ID',
                    'Volumetric Expansion',
                    'Comments']
 
+balances_columns = ['ID',
+                    'Name',
+                    'Max Load',
+                    'Resolution',
+                    'Type',
+                    'Positions',
+                    'Within',
+                    'Baudrate',
+                    'Parity',
+                    'Bytesize',
+                    'Stopbits',
+                    'Timeout']
+
+stations_columns = ['ID',
+                    'Balance ID',
+                    'Thermometer ID',
+                    'Barometer ID',
+                    'Balance Name',
+                    'Building',
+                    'Room']
 
 def populate_db_access(cls, table):
 
@@ -47,11 +67,19 @@ def populate_db_access(cls, table):
         cls.ui.dbTable.setColumnCount(len(environment_columns))
         cls.ui.dbTable.setHorizontalHeaderLabels(environment_columns)
 
+    elif table == 'stations':
+        cls.ui.dbTable.setColumnCount(len(stations_columns))
+        cls.ui.dbTable.setHorizontalHeaderLabels(stations_columns)
+
+    elif table == 'balances':
+        cls.ui.dbTable.setColumnCount(len(balances_columns))
+        cls.ui.dbTable.setHorizontalHeaderLabels(balances_columns)
+
     else:
         cls.ui.dbTable.setColumnCount(len(weights_columns))
         cls.ui.dbTable.setHorizontalHeaderLabels(weights_columns)
 
-    rows = len(data_table[0])
+    rows = len(data_table)
 
     cls.ui.dbTable.setRowCount(rows)
 

@@ -46,6 +46,20 @@ AT106H = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'stab time':  'Stabilizing: %s s',
           'wait time': 'Executing wait time:\n%s left',
           'id': 68}
+
+AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['Moving to position %s...', 'Movement complete', 'Error: failed to move to position %s']],
+          'sink': [['SINK\r\n'], ['Sinking handler', 'Sink complete', 'Error: failed to sink handler']],
+          'lift': [['LIFT\r\n'], ['Lifting handler', 'Lift complete', 'Error: failed to lift handler']],
+          'beep': [['DB 1\r\n'], ['Beeping', 'Beep complete', 'Error: failed to beep']],
+          'identify':   [['ID\r\n'], ['Identifying comparator', 'Id response:\n%s', 'Error: No balance response']],
+          'resolution': [['RG F\r\n', 'RG C\r\n'], ['Setting balance resolution', 'Resolution set', 'Error: failed to set resolution%s']],
+          'handshake on': [['HANDSHAKE_ON\r\n'], ['Turning handshake on', 'Handshake on', 'Error: failed to turn handshake on']],
+          'open door': [['WI 0\r\n'], ['Opening door', 'Door open', 'Error: failed to open door']],
+          'close door': [['WI 1\r\n'], ['Closing door', 'Door closed', 'Error: failed to close door']],
+          'read': [['SI\r\n'], ['Integrating: %s s', 'Value: %s', 'Error: failed to read value']],
+          'stab time':  'Stabilizing: %s s',
+          'wait time': 'Executing wait time:\n%s left',
+          'id': 69}
 # -----------------------------------------------------------------------------------
 
-comparator_matching = {68: AT106H}
+comparator_matching = {68: AT106H, 69: AX1006}

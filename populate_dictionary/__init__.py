@@ -14,3 +14,4 @@ def populate_dictionary(cls):
     data_structure_weights(cls)
     data_structure_addon_weights(cls)
     data_structure_cog(cls)
+

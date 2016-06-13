@@ -14,7 +14,7 @@ class AddWeightUI(QObject):
     def __init__(self, db):
         """
 
-        :param cls: This is an instance of MainUI, allowing this class to access MainUI.db, main_dict, etc.
+        :param db: This is an instance of MainUI.db, allowing this class to access databaseORM
         """
         self.db = db
 
@@ -56,7 +56,8 @@ class AddWeightUI(QObject):
         self.dict["vol"] = self.ui.volEdit.text()
         self.dict["comments"] = self.ui.commentsEdit.text()
 
-
+        self.db.add_weight(self.dict)
+        self.window.close()
 
     def __exit__(self):
         self.window.close()

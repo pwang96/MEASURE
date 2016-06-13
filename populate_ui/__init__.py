@@ -11,10 +11,12 @@ from populate_enviro_menu import populate_enviro_menu
 class PopulateUI:
 
     def __init__(self, main):
-        object_settings(main)
+        # Populating widgets in the tabs
+        object_settings(main)  # CALIBRATION TAB
         populate_tree_widget(main)
         populate_balance_menu(main)
-        populate_enviro_menu(main)
+
+        populate_enviro_menu(main)  # PLOT TAB
 
     def design_menu(self, main):
         populate_design_menu(main)
