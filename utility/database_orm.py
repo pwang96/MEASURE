@@ -461,7 +461,7 @@ class DatabaseORM:
         return self.engine.execute(sql).fetchall()
 
     def add_weight(self, dict):
-
+        # called when Add is clicked in the Add Weights UI
         table = self.weights_external.insert()
         self.engine.execute(table.values(weight_name=dict["weightName"],
                             units=dict["units"],
@@ -471,6 +471,17 @@ class DatabaseORM:
                             density_uncert=dict["uncert"],
                             volumetric_exp=dict["vol"],
                             comment=dict["comments"]))
+
+    def add_station(self, dict):
+        # called when Add is clicked in the Add Stations UI
+        table = self.stations.insert()
+        self.engine.execute(table.values(balance_id=dict['balance_id'],
+                                         thermometer_id=dict['thermometer_id'],
+                                         barometer_id=dict['barometer_id'],
+                                         hygrometer_id=dict['hygrometer_id'],
+                                         name=dict['name'],
+                                         building=dict['building'],
+                                         room=dict['room']))
 
     def get_thermometers(self):
         # Used in Edit Balances UI, populate_enviro_tree for Edit Meters UI
@@ -525,3 +536,11 @@ class DatabaseORM:
                                          barometer_id=dict['barometer_id'],
                                          hygrometer_id=dict['hygrometer_id']).
                             where(self.stations.c.balance_id == dict['balance_id']))
+
+    def get_station_balances(self):
+        """ Return list of balance ids, names of form: "id | balance" """
+        sql = text('SELECT a.id, a.name FROM balances a, stations b '
+                   'where a.id = b.balance_id '
+                   'ORDER BY a.id ')
+
+        return [str(r[0]) + ' | ' + r[1] for r in self.engine.execute(sql)]

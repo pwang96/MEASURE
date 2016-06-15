@@ -54,6 +54,7 @@ stations_columns = ['ID',
                     'Balance ID',
                     'Thermometer ID',
                     'Barometer ID',
+                    'Hygrometer ID',
                     'Balance Name',
                     'Building',
                     'Room']

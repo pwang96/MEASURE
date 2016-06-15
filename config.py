@@ -60,6 +60,16 @@ AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'stab time':  'Stabilizing: %s s',
           'wait time': 'Executing wait time:\n%s left',
           'id': 69}
+
+a1000 = {'read': []
+         }
+
+a100 = {'read': []
+         }
+
+a5 = {'read': []
+         }
+
 # -----------------------------------------------------------------------------------
 
-comparator_matching = {68: AT106H, 69: AX1006}
+comparator_matching = {68: AT106H, 69: AX1006, 70: a1000, 71: a100, 72: a5}

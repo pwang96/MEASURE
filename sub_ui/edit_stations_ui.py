@@ -33,7 +33,7 @@ class EditStationUI(QObject):
         self.ui = uic.loadUi('sub_ui/Edit_Stations.ui', self.window)
 
         # Populate the combo boxes: balances, thermometers, barometers, and hygrometers
-        balances = self.db.get_balance_names()
+        balances = self.db.get_station_balances()
         thermometers = self.db.get_thermometers()
         barometers = self.db.get_barometers()
         hygrometers = self.db.get_hygrometers()

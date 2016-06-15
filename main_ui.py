@@ -6,7 +6,6 @@ from threading import Thread
 from Queue import Queue
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import QObject, pyqtSignal
-from utility.database_orm import DatabaseORM
 from utility.run_masscode_queue import run_masscode_queue
 from utility.show_dictionary import pretty
 from config import base_path
@@ -24,6 +23,7 @@ from sub_ui.add_weight_ui import AddWeightUI
 from sub_ui.edit_meters_ui import EditMetersUI
 from sub_ui.manual_balance_ui import ManualBalanceUI
 from sub_ui.edit_stations_ui import EditStationUI
+from sub_ui.add_station_ui import AddStationUI
 # ------------------------------------------------------------------------------------------------------
 
 
@@ -160,7 +160,7 @@ class MainUI(QObject):
         self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
         self.ui.editMachinesButton.clicked.connect(self.click_edit_machines)
 
-        self.ui.configManBalButton.clicked.connect(self.click_manual_go)  # Manual Balance
+        self.ui.configManBalButton.clicked.connect(self.click_configure_manual)  # Manual Balance
 
 # -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
@@ -241,26 +241,31 @@ class MainUI(QObject):
         populate_db_access(self, 'barometers')
 
     def click_add_stations(self):
-        pass
+        # Brings up the UI to add a station
+        AddStationUI(self.db)
 
     def click_edit_stations(self):
+        # Brings up the UI to edit a station
         EditStationUI(self.db)
 
     def click_edit_weights(self):
+        # Brings up the UI to add an external weight
         AddWeightUI(self.db)
 
     def click_edit_machines(self):
+        # Brings up the UI to edit an environmental machine
         EditMetersUI(self)
 
-    def click_manual_go(self):
-        ManualBalanceUI(self.main_dict, self.db)
+    def click_configure_manual(self):
+        # Brings up the UI to conduct a calibration with a manual balance
+        ManualBalanceUI(self)
 # -------------------------------------------------------------------------------------------------------------------------
 
     def click_config_bal(self):
         """ Populate main_dict with selected items and call the comparator user interface """
         # Populate and show main dictionary
         populate_dictionary(self)
-        pretty(self.main_dict)
+        pretty(self.main_dict)  # prints out the main dictionary
 
         # TEMPORARY CODE, saves main dictionary for debugging purposes
         # ---------------------------------------------------------
