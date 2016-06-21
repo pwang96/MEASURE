@@ -64,6 +64,7 @@ def short_command(signal, conn, command, status_string, string_arg='', timeout=6
                 conn.close()
                 emit_status(signal, status_string[1], string_arg)
                 return
+
         timeout -= 1
     conn.close()
     emit_status(signal, status_string[2], string_arg)
@@ -148,7 +149,8 @@ def id_command(signal, conn, command, status_string, timeout=60):
     """ Send id command to balance through "conn" and emit a special status signal """
     print "Command: " + command.strip('\r\n')
     signal.emit(status_string[0])
-    conn.open()
+    if not conn.isOpen():
+        conn.open()
     # Wait until nothing can be read at the balance port
     while not timeout and conn.readlines():
         time.sleep(1)

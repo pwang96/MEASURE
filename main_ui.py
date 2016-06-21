@@ -18,12 +18,16 @@ from populate_dictionary import populate_dictionary
 # ------------------------------------------------------------------------------------------------------
 from plots.control_chart import ControlChart
 from plots.Environmentals import Environmentals
+from plots.fileplot_environment import FileEnvironmentPlot
+from plots.fileplot_mass import FileMassPlot
 from populate_ui.populate_db_access import populate_db_access
 from sub_ui.add_weight_ui import AddWeightUI
 from sub_ui.edit_meters_ui import EditMetersUI
 from sub_ui.manual_balance_ui import ManualBalanceUI
 from sub_ui.edit_stations_ui import EditStationUI
 from sub_ui.add_station_ui import AddStationUI
+import os
+from sqlalchemy.exc import OperationalError
 # ------------------------------------------------------------------------------------------------------
 
 
@@ -111,15 +115,14 @@ class MainUI(QObject):
         self.login()
 
         # Populate the menus within the main UI via the database
-        self.populate_ui = PopulateUI(self)  # CALIBRATION TAB: Populates the balance combo box, weight list, enviro list
-                                             # MANUAL BALANCE TAB: Also populates the balance combo box, design list,
-                                             # weight list in the manual balance tab
+        self.populate_ui = PopulateUI(self)     # CALIBRATION TAB: Populates the balance combo box, weight list, enviro list
+                                                # MANUAL BALANCE TAB: Also populates the balance combo box, design list,
+                                                # weight list in the manual balance tab
 
         self.input_file_queue = Queue()
 
-
         # Temporary testing config
-        self.ui.balNameCombo.setCurrentIndex(2)
+        self.ui.balNameCombo.setCurrentIndex(0)
         self.ui.chooseEnviroCombo.setCurrentIndex(0)
 
         # Activate the event handlers
@@ -129,6 +132,7 @@ class MainUI(QObject):
         window.show()
 
     def quit_slot(self):
+        # Slot for quit_signal
         app.quit()
 
     def callback_connector(self):
@@ -142,6 +146,8 @@ class MainUI(QObject):
 # -------------------------------------------------------------------------------------------------------------------------
 
         self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Browsing Output files
+        self.ui.extractButton.clicked.connect(self.extract_data)
+        self.ui.outputList.itemActivated.connect(self.extract_data)
 
         self.ui.controlChartRadio.toggled.connect(self.checked_control_chart)  # Control Chart
         self.ui.weightList.itemActivated.connect(self.draw_control_chart)
@@ -187,7 +193,7 @@ class MainUI(QObject):
     def click_browse(self):
         """ Opens a browser to look for files to parse and graph"""
         file_dialog = QtGui.QFileDialog()
-        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", base_path, "*.ntxt")
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", base_path, "*.nout")
         self.ui.outputList.addItems(file_names)
 
     def checked_control_chart(self):
@@ -197,7 +203,7 @@ class MainUI(QObject):
         self.ui.weightList.addItems(weight_list)
 
     def draw_control_chart(self):
-        """ """
+        """Creates an instance of ControlChart (matplotlib QTagg), graphs it in the PLOT tab """
         weight_name = self.ui.weightList.currentItem().text()
         self.controlChart = ControlChart(self, weight_name)
         self.ui.plotArea.addSubWindow(self.controlChart).setWindowTitle("Control Chart")
@@ -223,21 +229,27 @@ class MainUI(QObject):
         self.environmentals.show()
 
     def checked_stations(self):
+        # Populates the DB table with all stations
         populate_db_access(self, 'stations')
 
     def checked_balances(self):
+        # Populates the DB table with all balances
         populate_db_access(self, 'balances')
 
     def checked_external_weights(self):
+        # Populates the DB table with all external weights
         populate_db_access(self, 'weights_external')
 
     def checked_thermometers(self):
+        # Populates the DB table with all thermometers
         populate_db_access(self, 'thermometers')
 
     def checked_hygrometers(self):
+        # Populates the DB table with all hygrometers
         populate_db_access(self, 'hygrometers')
 
     def checked_barometers(self):
+        # Populates the DB table with all barometers
         populate_db_access(self, 'barometers')
 
     def click_add_stations(self):
@@ -258,23 +270,45 @@ class MainUI(QObject):
 
     def click_configure_manual(self):
         # Brings up the UI to conduct a calibration with a manual balance
-        ManualBalanceUI(self)
+        try:
+            # Populate the dictionary
+            populate_dictionary(self)
+
+            # Call the Manual Balance UI
+            ManualBalanceUI(self)
+
+        except IndexError:
+            ErrorMessage('Please fill in all the weights!')
+
+    def extract_data(self):
+        # gets the environmental and mass data from an output file and graphs it
+        filename = self.ui.outputList.currentItem().text()
+        with open(filename) as f:
+            text = f.readlines()
+            title = os.path.basename(str(f.name))
+        self.fileplot = FileEnvironmentPlot(text)
+        self.ui.plotArea.addSubWindow(self.fileplot).setWindowTitle("Environments Graph for %s" % title)
+        self.fileplot.show()
+
 # -------------------------------------------------------------------------------------------------------------------------
 
     def click_config_bal(self):
         """ Populate main_dict with selected items and call the comparator user interface """
-        # Populate and show main dictionary
-        populate_dictionary(self)
-        pretty(self.main_dict)  # prints out the main dictionary
+        try:
+            # Populate and show main dictionary
+            populate_dictionary(self)
+            pretty(self.main_dict)  # prints out the main dictionary
 
-        # TEMPORARY CODE, saves main dictionary for debugging purposes
-        # ---------------------------------------------------------
-        # with open('SubUIs/main_dict.json', 'w+') as fp:
-        #     json.dump(self.main_dict, fp)
-        # ---------------------------------------------------------
+            # TEMPORARY CODE, saves main dictionary for debugging purposes
+            # ---------------------------------------------------------
+            # with open('SubUIs/main_dict.json', 'w+') as fp:
+            #     json.dump(self.main_dict, fp)
+            # ---------------------------------------------------------
 
-        # Initializes the balance ui class stored in the balance dict under the balance id in the main dict
-        ComparatorUi(self.main_dict, self.db)
+            # Initializes the balance ui class stored in the balance dict under the balance id in the main dict
+            ComparatorUi(self.main_dict, self.db)
+        except IndexError:
+            ErrorMessage('Please fill in all the weights!')
 
     def activate_balance(self):
         """ Newly selected balance is used to populate main_dict and weighing design menu """
@@ -295,7 +329,10 @@ class MainUI(QObject):
          self.main_dict['thermometer id'],
          self.main_dict['barometer id'],
          self.main_dict['hygrometer id']] = self.db.station_id(self.main_dict['balance id'])
-        self.update_environment_table()
+        try:
+            self.update_environment_table()
+        except OperationalError:
+            ErrorMessage('No/wrong environmentals associated with balance!')
 
     def update_environment_table(self):
         """ Fetch latest environment data from database and display in environment table """
@@ -348,6 +385,7 @@ class MainUI(QObject):
             masscode_t = Thread(target=run_masscode_queue, args=(self,))
             masscode_t.start()
         self.ui.statusBrowser.append("Task complete!")
+        self.ui.inputList.clear()
 
     @staticmethod
     def exit_function():

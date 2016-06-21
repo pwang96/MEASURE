@@ -7,10 +7,12 @@ import re
 from subprocess import call
 from threading import Thread
 from PyQt4 import QtGui, QtCore, uic
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal, Qt
+from PyQt4.QtGui import QApplication, QCursor
 from serial import Serial
 from file_generators.generate_input_file import generate_input_file
-from control.ingredient_methods import id_command
+from control.manual_recipe_maker import manual_short_command
+from control.manual_recipe_maker import manual_id_command
 from config import comparator_matching, masscode_path
 from utility.show_dictionary import pretty
 from config import base_path
@@ -39,7 +41,7 @@ class ManualBalanceUI(QObject):
     """
 
     # PyQt signal-slot mechanism (signal can be emitted anywhere and its slot method is executed)
-    status_signal = pyqtSignal(str)
+    status_signal2 = pyqtSignal(str)
     data_signal = pyqtSignal(str)
 
     def __init__(self, cls):
@@ -64,7 +66,7 @@ class ManualBalanceUI(QObject):
         self.ui.portCombo.addItems(serial_ports())
 
         # Disable the continue button until a connection is established
-        self.ui.continueButton.setEnabled(1)  # changed to enabled for testing
+        self.ui.continueButton.setEnabled(0)
 
         # start the callback connector
         self.callbackconnector()
@@ -100,7 +102,7 @@ class ManualBalanceUI(QObject):
         self.ui.continueButton.clicked.connect(self.proceed)
         self.ui.cancelButton.clicked.connect(self.cancel)
         self.ui.connectButton.clicked.connect(self.click_connect)
-        self.status_signal.connect(self.status_slot)
+        self.status_signal2.connect(self.status_slot)
 
     def proceed(self):
         # This updates the status dialog box, and tells the user what to do next.
@@ -111,7 +113,7 @@ class ManualBalanceUI(QObject):
 
         # If the row counter is past the number of design matrix rows, save everything and quit
         if self.row_counter >= len(self.main_dict['design matrix']):
-            self.status_signal.emit('Finished with measurements.')
+            self.status_signal2.emit('Finished with measurements.')
             # Prompt user for desired path
             file_dialog = QtGui.QFileDialog()
             input_file_path = QtGui.QFileDialog.getSaveFileName(file_dialog, 'Save as...',
@@ -129,6 +131,12 @@ class ManualBalanceUI(QObject):
                                              len(self.data_dict.keys()))
             output_file = input_file[:].replace('.ntxt', '.nout')
 
+            # Run input file
+            command = '"%s" "%s" "%s"\n' % (str(masscode_path), str(input_file), str(output_file))
+            print command
+            t = Thread(target=call, args=(command,))
+            t.start()
+
             self.window.close()
 
         try:
@@ -140,16 +148,21 @@ class ManualBalanceUI(QObject):
             pretty(self.data_dict)
 
         if self.isMeasure:  # if a weight was just loaded, isMeasure will be True.
-            self.ui.continueButton.setEnabled(0)
-            self.status_signal.emit('Getting measurement...')
-            # time.sleep(self.stab_time)
 
-            # TODO: GET THE MEASUREMENT
-            # self.readout = measurement
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+
+            self.ui.continueButton.setEnabled(0)  # disable the continue button
+            time.sleep(float(self.stab_time))  # wait the stability time before taking a reading
+
+            command = comparator_matching[self.main_dict['balance id']]['read'][0][0]
+            status_string = comparator_matching[self.main_dict['balance id']]['read'][1]
+            # self.readout = the measurement
+            self.readout = manual_short_command(self.status_signal2, self.conn, command, status_string, 2)
 
             self.save_data()
 
-            self.status_signal.emit('Got measurement. Press continue.')
+            self.status_signal2.emit('Got measurement: %s Press continue.' % str(self.readout))
+            QApplication.restoreOverrideCursor()
             self.ui.continueButton.setEnabled(1)
 
             if self.step == 4:  # at step 4, it enters the B2A2 phase
@@ -164,7 +177,7 @@ class ManualBalanceUI(QObject):
 
         elif self.set == 1:
 
-            self.status_signal.emit('Put on weight(s): %s and press Continue.' % str(set1))
+            self.status_signal2.emit('Put on weight(s): %s and press Continue.' % str(set1))
             self.isMeasure = True
             if self.AB == 1:
                 self.set = 2
@@ -172,7 +185,7 @@ class ManualBalanceUI(QObject):
 
         elif self.set == 2:
 
-            self.status_signal.emit('Put on weight(s): %s and press Continue.' % str(set2))
+            self.status_signal2.emit('Put on weight(s): %s and press Continue.' % str(set2))
             self.isMeasure = True
             if self.AB == 2:
                 self.set = 1
@@ -184,13 +197,14 @@ class ManualBalanceUI(QObject):
         self.ui.statusBrowser.append(args)
 
         # Detect if a balance serial connection was made, arg will include "Id response"
-        if 'Id response:' in args:
+        if 'STD' in args:
             self.flags['connection'] = 1
             self.ui.statusBrowser.clear()
             self.ui.statusBrowser.append("Connected. Press continue")
             self.ui.continueButton.setEnabled(1)
             self.ui.portCombo.setEnabled(0)
             self.ui.connectButton.setEnabled(0)
+            self.ui.stabTimeEdit.setEnabled(0)
 
     def populate_reminder_table(self, cls):
 
@@ -239,11 +253,14 @@ class ManualBalanceUI(QObject):
             command = comparator_matching[self.main_dict['balance id']]['identify'][0][0]
             status_string = comparator_matching[self.main_dict['balance id']]['identify'][1]
 
-            t = Thread(target=id_command, args=(self.status_signal, self.conn, command, status_string, 2))
+            t = Thread(target=manual_id_command, args=(self.status_signal2, self.conn, command, status_string, 2))
             t.start()
+            self.stab_time = self.ui.stabTimeEdit.text()
+            if self.stab_time == '':
+                self.stab_time = 35
         except ValueError as e:
             # Write error to status browser
-            self.status_signal.emit('Error in connection object: ' + str(e))
+            self.status_signal2.emit('Error in connection object: ' + str(e))
 
     def save_data(self):
         # Get the latest temperatures

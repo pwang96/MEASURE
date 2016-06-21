@@ -1,7 +1,78 @@
 __author__ = 'masslab'
 
-from ingredient_methods import wait_time, short_command, short_command_no_resp, long_command, stab_time,\
-    read_value_repeatedly
+import time
+import re
+import numpy as np
+from decimal import Decimal
+from config import good_responses
+
+
+def emit_status(signal, status, arg):
+    try:
+        signal.emit(status % arg)
+    except TypeError:
+        signal.emit(status)
+
+
+def manual_short_command(signal, conn, command, status_string, string_arg='', timeout=60):
+    """ Send specified command (expects a balance response)to balance through "conn" and emit status signal """
+    print "Command: " + command.strip('\r\n')
+    emit_status(signal, status_string[0], string_arg)
+    if not conn.isOpen():
+        conn.open()
+    # Wait until nothing can be read at the balance port
+    while not timeout and conn.readlines():
+        time.sleep(1)
+        timeout -= 1
+    # Write the command to the balance port and wait for response
+    while timeout:
+        time.sleep(1)
+        conn.write(command)
+        resp = conn.readlines()
+
+        try:
+            resp = float(resp[0])
+        except ValueError:
+            pattern = r'.?(\d*\.\d*)'
+            match = re.findall(pattern, resp[0])
+            resp = float(match[0])
+        except IndexError:
+            continue
+
+        print resp
+        print 'timeout: %s' % timeout
+        if resp:
+            return resp
+
+        timeout -= 1
+    conn.close()
+    emit_status(signal, status_string[2], string_arg)
+    return
+
+
+def manual_id_command(signal, conn, command, status_string, timeout=60):
+    """ Send id command to balance through "conn" and emit a special status signal """
+    print "Command: " + command.strip('\r\n')
+    signal.emit(status_string[0])
+    if not conn.isOpen():
+        conn.open()
+    # Wait until nothing can be read at the balance port
+    while not timeout and conn.readlines():
+        time.sleep(1)
+        timeout -= 1
+    # Write the command to the balance port and wait for response
+    while timeout:
+        time.sleep(1)
+        conn.write(command)
+        resp = conn.readlines()
+        if resp:
+            conn.close()
+            signal.emit(status_string[0] % ''.join(resp))
+            return
+        timeout -= 1
+    conn.close()
+    signal.emit('here')
+    return
 
 
 class ManualRecipeMaker:

@@ -61,15 +61,17 @@ AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'wait time': 'Executing wait time:\n%s left',
           'id': 69}
 
-a1000 = {'read': []
-         }
+AX_MX_UMX = {'identify': [['I10\r\n'], ['I10 A %s']],
+             'read': [['SU\r\n'], ['S S %s %s']],
+             'id': 70}
 
-a100 = {'read': []
-         }
+AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
+             'beep': [['DB 1\r\n'], ['beep']],
+             'read': [['S\r\n'], ['%s']],
+             'tare': [['T\r\n'], ['Tare']],
+             'id': 99}
 
-a5 = {'read': []
-         }
 
 # -----------------------------------------------------------------------------------
 
-comparator_matching = {68: AT106H, 69: AX1006, 70: a1000, 71: a100, 72: a5}
+comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT}

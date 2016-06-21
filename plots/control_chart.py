@@ -21,7 +21,7 @@ class ControlChart(FigureCanvasQTAgg):
         :param weight_name: string of the name of the weight
         """
         (weight_date, weight_history) = cls.db.get_weight_history(weight_name)
-        weight_history = [float(i) for i in weight_history] # converting from list of strings to list of floats
+        weight_history = [float(i) for i in weight_history]  # converting from list of strings to list of floats
         self.fig = plt.figure(facecolor='white')
         self.ax = self.fig.add_subplot(111)
 

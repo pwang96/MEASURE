@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 
+
 class Environmentals(FigureCanvasQTAgg):
     """
 
@@ -19,25 +20,29 @@ class Environmentals(FigureCanvasQTAgg):
         :param apparatusID:
         """
         if enviroType == "Temperature":
-            (date, measurement) = cls.db.get_all_temps(apparatusID)
+            (date, readout) = cls.db.get_all_temps(apparatusID)
         elif enviroType == "Pressure":
-            (date, measurement) = cls.db.get_all_press(apparatusID)
+            (date, readout) = cls.db.get_all_press(apparatusID)
         elif enviroType == "Humidity":
-            (date, measurement) = cls.db.get_all_humid(apparatusID)
+            (date, readout) = cls.db.get_all_humid(apparatusID)
 
-        print type(date), type(measurement)
-        print len(date), len(measurement)
-        print date, measurement
+        self.measurement = np.empty(len(readout))
 
-        try:
-            measurement = np.array([float(i) for i in measurement])
-            date = np.array(date)
-        except ValueError:
-            measurement = 0
-            print "Something happened"
+        for index, value in enumerate(readout):
+            try:
+                self.measurement[index] = float(value)
+            except ValueError:
+                try:
+                    self.measurement[index] = self.measurement[index-1]
+                except IndexError:
+                    self.measurement[index] = 0
+
+        date = np.array(date)
 
         self.fig = plt.figure(facecolor='white')
-        self.ax = self.fig.add_subplot(321)
+        self.ax = self.fig.add_subplot(111)
+
+        self.fig.autofmt_xdate()
 
         if enviroType == "Temperature":
             self.ax.set_ylabel(u'Temperature [\N{DEGREE SIGN}C]', fontsize=12)
@@ -48,14 +53,11 @@ class Environmentals(FigureCanvasQTAgg):
 
         self.ax.set_xlabel("Timestamp", fontsize=12)
         self.fig.suptitle("%s, Apparatus: %s, Serial #%s" % (enviroType, apparatusName, apparatusSerial))
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d/%Y'))
-        self.ax.xaxis.set_major_locator(mdates.DayLocator())
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%Y'))
+        self.ax.xaxis.set_major_locator(mdates.MonthLocator())
 
-        self.fig.autofmt_xdate()
-        #self.ax.plot(date, measurement)
-        plt.plot_date(date, measurement)
-
-
+        # self.ax.plot(date, measurement)
+        plt.plot_date(date, self.measurement)
 
         FigureCanvasQTAgg.__init__(self, self.fig)
 

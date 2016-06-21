@@ -2,6 +2,7 @@ __author__ = 'masslab'
 
 import time
 from config import software_name
+import re
 
 
 def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
@@ -17,7 +18,7 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
     Returns:
         filename (str): path to input file
     """
-    print "im generating an input file"
+    print "Generating input file"
 
     observation = []
     environment = []
@@ -29,7 +30,12 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
             reading.append(data_dict[key1][key2][0])
             environment.append(data_dict[key1][key2][1:])
         # calculate average of differences in readings
-        observation.append(str((float(reading[0])+float(reading[3]))/2 - (float(reading[1])+float(reading[2]))/2))
+        try:
+            observation.append(str((float(reading[0])+float(reading[3]))/2 - (float(reading[1])+float(reading[2]))/2))
+        except ValueError:
+            pattern = r'.?(\d*\.\d*)'
+            matches = [re.findall(pattern, reading[i]) for i in range(4)]
+            observation.append(str((float(matches[0][0])+float(matches[3][0]))/2 - (float(matches[1][0])+float(matches[2][0]))/2))
 
     # Cut out extension of the self.path variable (*.settings)
     filename = path + "_" + str(run_number) + ".ntxt"

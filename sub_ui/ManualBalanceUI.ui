@@ -98,6 +98,13 @@
       <widget class="QComboBox" name="portCombo"/>
      </item>
      <item>
+      <widget class="QLineEdit" name="stabTimeEdit">
+       <property name="placeholderText">
+        <string>Desired stabilization time (seconds)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="connectButton">
        <property name="text">
         <string>Connect</string>
