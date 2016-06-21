@@ -69,6 +69,7 @@ AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
              'beep': [['DB 1\r\n'], ['beep']],
              'read': [['S\r\n'], ['%s']],
              'tare': [['T\r\n'], ['Tare']],
+             'stab time':  'Stabilizing: %s s',
              'id': 99}
 
 
