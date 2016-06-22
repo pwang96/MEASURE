@@ -3,6 +3,8 @@ __author__ = 'masslab'
 
 from PyQt4 import QtGui, QtCore, uic
 from PyQt4.QtCore import QObject
+from PyQt4.QtGui import QCompleter
+import datetime
 from sub_ui.error_message import ErrorMessage
 from populate_ui.populate_enviro_tree import populate_enviro_tree
 
@@ -80,22 +82,34 @@ class EditMetersUI(QObject):
                                 self.ui.uncertEdit: True,
                                 self.ui.dateEdit: True,
                                 self.ui.applyButton: True}
+
+            # Set up auto completion for the date field
+            dateList = QtCore.QStringList([datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")])
+            dateEditCompleter = QCompleter(dateList)
+            dateEditCompleter.setCompletionMode(QCompleter.InlineCompletion)
+            self.ui.dateEdit.setCompleter(dateEditCompleter)
+
             self.update_widgets()
         # if the user/pass aren't found,
         else:
             ErrorMessage('Login Failed')
 
     def apply_changes(self):
+        # Applies the changes to the database. Updates a, b, c, uncertainty, date, and last_edited_by
+        # This allows the administrator of the database to see who changed which machines
         self.dict['a'] = self.ui.aEdit.text()
         self.dict['b'] = self.ui.bEdit.text()
         self.dict['c'] = self.ui.cEdit.text()
         self.dict['uncert'] = self.ui.uncertEdit.text()
         self.dict['date'] = self.ui.dateEdit.text()
 
-        probe = self.ui.enviroTree.currentItem().text(0).split('|')[1]
-        self.db.update_machines(self.ui.enviroTree.currentItem().parent().text(0),
+        type = self.ui.enviroTree.currentItem().parent().text(0)
+        probe = self.ui.enviroTree.currentItem().text(0).split('|')[2]
+        user = self.ui.usernameEdit.text()
+        self.db.update_machines(type,
                                 probe,
-                                self.dict)
+                                self.dict,
+                                user)
 
         self.window.close()
 
