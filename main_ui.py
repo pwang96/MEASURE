@@ -8,7 +8,7 @@ from PyQt4 import QtGui, uic
 from PyQt4.QtCore import QObject, pyqtSignal
 from utility.run_masscode_queue import run_masscode_queue
 from utility.show_dictionary import pretty
-from config import base_path
+from config import base_path, output_path
 from config import software_name
 from sub_ui.comparator_ui import ComparatorUi
 from sub_ui.error_message import ErrorMessage
@@ -137,17 +137,19 @@ class MainUI(QObject):
 
     def callback_connector(self):
         """ Activate event detection"""
-        self.ui.balNameCombo.activated.connect(self.activate_balance)
+        self.ui.balNameCombo.activated.connect(self.activate_balance)  # Calibration Tab
         self.ui.designCombo.activated.connect(self.activate_design)
-        self.ui.inputButton.clicked.connect(self.click_input)
-        self.ui.masscodeButton.clicked.connect(self.click_masscode)
-        self.ui.configBalButton.clicked.connect(self.click_config_bal)
+        self.ui.configManBalButton.clicked.connect(self.click_configure_manual)  # Manual Balance
+        self.ui.configBalButton.clicked.connect(self.click_config_bal)  # Automatic Balance
 
+        self.ui.masscodeButton.clicked.connect(self.click_masscode)  # Masscode Tab
+        self.ui.inputButton.clicked.connect(self.click_input)
 # -------------------------------------------------------------------------------------------------------------------------
 
         self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Browsing Output files
         self.ui.extractButton.clicked.connect(self.extract_data)
         self.ui.outputList.itemActivated.connect(self.extract_data)
+        self.ui.sendButton.clicked.connect(self.send_data)
 
         self.ui.controlChartRadio.toggled.connect(self.checked_control_chart)  # Control Chart
         self.ui.weightList.itemActivated.connect(self.draw_control_chart)
@@ -165,8 +167,6 @@ class MainUI(QObject):
         self.ui.editStationButton.clicked.connect(self.click_edit_stations)
         self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
         self.ui.editMachinesButton.clicked.connect(self.click_edit_machines)
-
-        self.ui.configManBalButton.clicked.connect(self.click_configure_manual)  # Manual Balance
 
 # -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
@@ -193,7 +193,7 @@ class MainUI(QObject):
     def click_browse(self):
         """ Opens a browser to look for files to parse and graph"""
         file_dialog = QtGui.QFileDialog()
-        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", base_path, "*.nout")
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", output_path, "*.nout")
         self.ui.outputList.addItems(file_names)
 
     def checked_control_chart(self):
@@ -282,13 +282,24 @@ class MainUI(QObject):
 
     def extract_data(self):
         # gets the environmental and mass data from an output file and graphs it
-        filename = self.ui.outputList.currentItem().text()
+        try:
+            filename = self.ui.outputList.currentItem().text()
+        except AttributeError:
+            ErrorMessage("No file selected!")
         with open(filename) as f:
             text = f.readlines()
             title = os.path.basename(str(f.name))
         self.fileplot = FileEnvironmentPlot(text)
         self.ui.plotArea.addSubWindow(self.fileplot).setWindowTitle("Environments Graph for %s" % title)
         self.fileplot.show()
+
+    def send_data(self):
+        # parses the output file and sends the weight data to the database.
+        # gets the date, Balance ID, Weight IDs, measurements, F-test, and T-test
+        filename = self.ui.outputList.currentItem().text()
+        with open(filename) as f:
+            text = f.readlines()
+        ErrorMessage("Not finished yet!")
 
 # -------------------------------------------------------------------------------------------------------------------------
 

@@ -446,16 +446,17 @@ class DatabaseORM:
                        'serial, '
                        'probe, '
                        'room, '
-                       'coeff_a ,'
-                       'coeff_b , '
-                       'coeff_c , '
+                       'coeff_a,'
+                       'coeff_b, '
+                       'coeff_c, '
                        'uncertainty,'
                        'calibration_date,'
-                       'baudrate , '
+                       'baudrate, '
                        'parity,'
-                       'bytesize ,'
-                       'stopbits ,'
-                       'timeout '
+                       'bytesize,'
+                       'stopbits,'
+                       'timeout,'
+                       'last_edited_by '
                        'FROM %s '
                        'ORDER BY id ' % type)
         return self.engine.execute(sql).fetchall()
@@ -499,14 +500,15 @@ class DatabaseORM:
             order_by(self.hygrometers.c.id)
         return [str(r[0]) + '|' + str(r[1]) + '|' + str(r[2]) for r in self.engine.execute(sql)]
 
-    def update_machines(self, type, probe, dict):
+    def update_machines(self, type, probe, dict, user):
         if type == 'Thermometers':
             table = self.thermometers.update()
             self.engine.execute(table.values(coeff_a=dict['a'],
                                              coeff_b=dict['b'],
                                              coeff_c=dict['c'],
                                              uncertainty=dict['uncert'],
-                                             calibration_date=dict['date']).
+                                             calibration_date=dict['date'],
+                                             last_edited_by=user).
                                 where(self.thermometers.c.probe==probe))
 
         elif type == 'Barometers':
@@ -515,7 +517,8 @@ class DatabaseORM:
                                              coeff_b=dict['b'],
                                              coeff_c=dict['c'],
                                              uncertainty=dict['uncert'],
-                                             calibration_date=dict['date']).
+                                             calibration_date=dict['date'],
+                                             last_edited_by=user).
                                 where(self.barometers.c.serial == probe))
 
         elif type == 'Hygrometers':
@@ -524,7 +527,8 @@ class DatabaseORM:
                                              coeff_b=dict['b'],
                                              coeff_c=dict['c'],
                                              uncertainty=dict['uncert'],
-                                             calibration_date=dict['date']).
+                                             calibration_date=dict['date'],
+                                             last_edited_by=user).
                                 where(self.hygrometers.c.serial == probe))
 
     def update_stations(self, dict):

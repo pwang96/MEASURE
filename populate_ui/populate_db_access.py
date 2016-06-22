@@ -22,9 +22,10 @@ environment_columns = ['ID',
                        'Calibration Date',
                        'Baudrate',
                        'Parity',
-                       'Bytesize'
+                       'Bytesize',
                        'Stopbits',
-                       'Timeout']
+                       'Timeout',
+                       'Last Edited By']
 
 weights_columns = ['ID',
                    'Serial #',

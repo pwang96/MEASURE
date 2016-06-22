@@ -14,6 +14,9 @@ db_schema = nist_db_schema
 # This identifies the mass code path
 masscode_path = nist_masscode_path
 
+# This identifies the path of output files
+output_path = r'L:\internal\684.07\Mass_Project\Customers\Calibration Reports'
+
 # This identifies the base path the program will use to when prompting the
 # user for input file directory
 base_path = nist_base_path
