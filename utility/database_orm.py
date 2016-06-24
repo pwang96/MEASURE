@@ -52,6 +52,8 @@ class DatabaseORM:
         self.weights_internal = Table("weights_internal", meta)
         self.weights_internal_history = Table("weights_internal_history", meta)
         self.weights_internal_combos = Table("weights_internal_combos", meta)
+        self.external_weight_data = Table("external_weight_data", meta)
+        self.internal_weight_data = Table("internal_weight_data", meta)
 
         # Tables: Data Processing
         self.cal_data = Table("cal_data", meta)
@@ -548,3 +550,85 @@ class DatabaseORM:
                    'ORDER BY a.id ')
 
         return [str(r[0]) + ' | ' + r[1] for r in self.engine.execute(sql)]
+
+    def add_custom_design(self, design):
+        """ Adds the design matrix to the design column in the designs table"""
+        table = self.designs.update()
+        self.engine.execute((table.values(design=design)).
+                            where(self.designs.c.id == 99))
+
+    def get_weightID_by_name(self, name):
+        # Gets the weight ID given the name
+        sql = select([self.weights_internal.c.id]). \
+            where(self.weights_internal.c.weight_name == str(name))
+        return self.engine.execute(sql).fetchall()
+
+    def push_restraint_weight_data(self, data):
+        # pushes the restraint info into the internal weight data table
+        table = self.internal_weight_data.insert()
+        self.engine.execute(table.values(date=data['date'],
+                                         balanceID=data['balance'],
+                                         name=data['restraint name'],
+                                         weightID=data['restraint ID'],
+                                         correction=data['restraint correction'],
+                                         acceptedCorrection=data['restraint accepted'],
+                                         typeA=data['restraint A'],
+                                         typeB=data['restraint B'],
+                                         volume=data['restraint volume'],
+                                         density=data['restraint density'],
+                                         temperature=data['temperature'],
+                                         pressure=data['pressure'],
+                                         humidity=data['humidity'],
+                                         role='Restraint'))
+
+    def push_check_weight_data(self, data):
+        # pushes the check info into the internal weight data table
+        table = self.internal_weight_data.insert()
+        self.engine.execute(table.values(date=data['date'],
+                                         balanceID=data['balance'],
+                                         name=data['check name'],
+                                         weightID=data['check ID'],
+                                         correction=data['check correction'],
+                                         acceptedCorrection=data['check accepted'],
+                                         typeA=data['check A'],
+                                         typeB=data['check B'],
+                                         volume=data['check volume'],
+                                         density=data['check density'],
+                                         temperature=data['temperature'],
+                                         pressure=data['pressure'],
+                                         humidity=data['humidity'],
+                                         role='Check'))
+
+    def push_unknown1_data(self, data):
+        # pushes the first unknown's info into the external weight data table
+        table = self.external_weight_data.insert()
+        self.engine.execute(table.values(date=data['date'],
+                                         balanceID=data['balance'],
+                                         name=data['unknown1 name'],
+                                         correction=data['unknown1 correction'],
+                                         acceptedCorrection=data['unknown1 accepted'],
+                                         typeA=data['unknown1 A'],
+                                         typeB=data['unknown1 B'],
+                                         volume=data['unknown1 volume'],
+                                         density=data['unknown1 density'],
+                                         temperature=data['temperature'],
+                                         pressure=data['pressure'],
+                                         humidity=data['humidity'],
+                                         role='Unknown'))
+
+    def push_unknown2_data(self, data):
+        # pushes the second unknown's info into the external weight data table
+        table = self.external_weight_data.insert()
+        self.engine.execute(table.values(date=data['date'],
+                                         balanceID=data['balance'],
+                                         name=data['unknown2 name'],
+                                         correction=data['unknown2 correction'],
+                                         acceptedCorrection=data['unknown2 accepted'],
+                                         typeA=data['unknown2 A'],
+                                         typeB=data['unknown2 B'],
+                                         volume=data['unknown2 volume'],
+                                         density=data['unknown2 density'],
+                                         temperature=data['temperature'],
+                                         pressure=data['pressure'],
+                                         humidity=data['humidity'],
+                                         role='Unknown'))

@@ -26,8 +26,10 @@ from sub_ui.edit_meters_ui import EditMetersUI
 from sub_ui.manual_balance_ui import ManualBalanceUI
 from sub_ui.edit_stations_ui import EditStationUI
 from sub_ui.add_station_ui import AddStationUI
+from sub_ui.custom_design_matrix import CustomDesignUI
 import os
 from sqlalchemy.exc import OperationalError
+from utility.parse_send import parse_output, send_output
 # ------------------------------------------------------------------------------------------------------
 
 
@@ -120,6 +122,7 @@ class MainUI(QObject):
                                                 # weight list in the manual balance tab
 
         self.input_file_queue = Queue()
+        self.output_file_queue = Queue()
 
         # Temporary testing config
         self.ui.balNameCombo.setCurrentIndex(0)
@@ -186,7 +189,8 @@ class MainUI(QObject):
         login = LoginUi(self.quit_signal)
         self.db = login.db
         self.main_dict['user id'] = login.ident
-        if login.ident == None:
+        if login.ident is None:
+            raise RuntimeError('Login cancelled')
             app.quit()
 
 # -------------------------------------------------------------------------------------------------------------------------
@@ -295,11 +299,15 @@ class MainUI(QObject):
 
     def send_data(self):
         # parses the output file and sends the weight data to the database.
-        # gets the date, Balance ID, Weight IDs, measurements, F-test, and T-test
+        # gets the date, Balance ID, Weight IDs, measurements
         filename = self.ui.outputList.currentItem().text()
-        with open(filename) as f:
-            text = f.readlines()
-        ErrorMessage("Not finished yet!")
+        try:
+            data = parse_output(filename)
+            send_output(data, self.db)
+            self.ui.statusBrowser.append('Data uploaded to database!')
+        except AssertionError:
+            ErrorMessage("Not an output file! Make sure the file ends with '.nout'.")
+
 
 # -------------------------------------------------------------------------------------------------------------------------
 
@@ -344,6 +352,8 @@ class MainUI(QObject):
             self.update_environment_table()
         except OperationalError:
             ErrorMessage('No/wrong environmentals associated with balance!')
+        except IndexError:
+            ErrorMessage('Invalid Environmentals')
 
     def update_environment_table(self):
         """ Fetch latest environment data from database and display in environment table """
@@ -361,6 +371,10 @@ class MainUI(QObject):
     def activate_design(self):
         """ Populate main_dict with selected design and initialize the weight table with appropriate number of rows """
         # Transfer the design info into the dictionary
+
+        if 'Custom' in self.ui.designCombo.currentText().split("|")[1]:  # if a custom is chosen, pull up the UI
+            CustomDesignUI(self.db)  # the UI will update the database so the next part of the code will work
+
         [self.main_dict['design id'],
          self.main_dict['design name'],
          array] = self.db.design_data(int(self.ui.designCombo.currentText().split("|")[0]))
@@ -371,9 +385,15 @@ class MainUI(QObject):
 
         # Collect design into array and display in status browser
         self.main_dict['design matrix'] = []
-        for row in array.split(' ; '):
-            self.main_dict['design matrix'].append([int(a) for a in row.split(' ')])
-            self.ui.statusBrowser.append(row)
+        try:
+            for row in array.split(' ; '):
+                self.main_dict['design matrix'].append([int(a) for a in row.split(' ')])
+                self.ui.statusBrowser.append(row)
+        except ValueError:
+            array = array.replace(';', ' ;')
+            for row in array.split(' ; '):
+                self.main_dict['design matrix'].append([int(a) for a in row.split(' ')])
+                self.ui.statusBrowser.append(row)
 
         # Populate the weight table based on chosen design
         self.populate_ui.table_widget(self)
