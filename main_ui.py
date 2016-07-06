@@ -99,7 +99,7 @@ class MainUI(QObject):
                  'units': None,
                  'user id': None,
                  #------------------------------------------------
-                 'index': None}
+                 'index': None}  # for the environmental plot, list of name and serial of environmental machines
                  #------------------------------------------------
 
     quit_signal = pyqtSignal(int)
@@ -122,7 +122,6 @@ class MainUI(QObject):
                                                 # weight list in the manual balance tab
 
         self.input_file_queue = Queue()
-        self.output_file_queue = Queue()
 
         # Temporary testing config
         self.ui.balNameCombo.setCurrentIndex(0)
@@ -266,7 +265,7 @@ class MainUI(QObject):
 
     def click_edit_weights(self):
         # Brings up the UI to add an external weight
-        AddWeightUI(self.db)
+        AddWeightUI(self)
 
     def click_edit_machines(self):
         # Brings up the UI to edit an environmental machine
@@ -300,14 +299,26 @@ class MainUI(QObject):
     def send_data(self):
         # parses the output file and sends the weight data to the database.
         # gets the date, Balance ID, Weight IDs, measurements
-        filename = self.ui.outputList.currentItem().text()
-        try:
-            data = parse_output(filename)
-            send_output(data, self.db)
-            self.ui.statusBrowser.append('Data uploaded to database!')
-        except AssertionError:
-            ErrorMessage("Not an output file! Make sure the file ends with '.nout'.")
 
+        count = self.ui.outputList.count()
+        for i in range(count):
+
+            filename = self.ui.outputList.item(i).text()
+
+            try:
+                data = parse_output(filename)
+                r, c, u1, u2 = send_output(data, self.db)
+                self.ui.statusBrowser.append('Data uploaded to database!')
+                # self.ui.outputList.takeItem(i)
+            except AssertionError:
+                ErrorMessage("Not an output file! Make sure the file ends with '.nout'.")
+        self.ui.outputList.clear()
+        try:
+            self.massplot = FileMassPlot(self.db, r, c, u1, u2)
+            self.ui.plotArea.addSubWindow(self.massplot).setWindowTitle("Mass control charts")
+            self.massplot.show()
+        except UnboundLocalError:
+            pass
 
 # -------------------------------------------------------------------------------------------------------------------------
 
@@ -410,11 +421,10 @@ class MainUI(QObject):
         self.ui.masscodeButton.setEnabled(False)
         self.ui.statusBrowser.clear()
         for n in range(self.ui.inputList.count()):
-            print self.ui.inputList.item(n).text()
             self.input_file_queue.put(str(self.ui.inputList.item(n).text()))
-        for n in range(5):
-            masscode_t = Thread(target=run_masscode_queue, args=(self,))
-            masscode_t.start()
+
+        masscode_t = Thread(target=run_masscode_queue, args=(self,))
+        masscode_t.start()
         self.ui.statusBrowser.append("Task complete!")
         self.ui.inputList.clear()
 

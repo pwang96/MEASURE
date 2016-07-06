@@ -7,7 +7,7 @@ def data_structure_addon_weights(cls):
     cls.main_dict['addon info'] = [[] for i in range(n)]
     cls.main_dict['addon history id'] = [[] for i in range(n)]
     for i in range(n):
-        for i2 in range(3, cls.ui.weightTable.columnCount()):
+        for i2 in range(4, cls.ui.weightTable.columnCount()):
             addon_str = str(cls.ui.weightTable.item(i, i2).text())
             if addon_str:
                 addon_id = addon_str.split("|")[0]

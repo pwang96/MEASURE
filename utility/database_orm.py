@@ -126,7 +126,7 @@ class DatabaseORM:
             where(self.stations.c.id == station_id)
         return self.engine.execute(sql).fetchall()[0]
 
-    def external_weight_data(self, weight_id):
+    def get_external_weight_data(self, weight_id):
         """ Return metadata from weight in 'weight_external' table.
 
         Returns:
@@ -141,7 +141,7 @@ class DatabaseORM:
             where(self.weights_external.c.id == weight_id)
         return self.engine.execute(sql).fetchall()[0]
 
-    def internal_weight_data(self, weight_id):
+    def get_internal_weight_data(self, weight_id):
         """ Return metadata from weight in 'weight_internal_history' table.
 
         Note:
@@ -632,3 +632,19 @@ class DatabaseORM:
                                          pressure=data['pressure'],
                                          humidity=data['humidity'],
                                          role='Unknown'))
+
+    def get_int_weight_corrections_uncertainty(self, name):
+        # gets the corrections and uncertainties for the weight [name]
+        sql = select([self.internal_weight_data.c.correction, self.internal_weight_data.c.typeA,
+                      self.internal_weight_data.c.typeB]). \
+            order_by(self.internal_weight_data.c.date).\
+            where(self.internal_weight_data.c.name == name)
+        return self.engine.execute(sql)
+
+    def get_ext_weight_corrections_uncertainty(self, name):
+        # gets the corrections and uncertainties for the external weights [name]
+        sql = select([self.external_weight_data.c.correction, self.external_weight_data.c.typeA,
+                      self.external_weight_data.c.typeB]). \
+            order_by(self.external_weight_data.c.date). \
+            where(self.external_weight_data.c.name == name)
+        return self.engine.execute(sql)

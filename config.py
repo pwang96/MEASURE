@@ -65,17 +65,38 @@ AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'id': 69}
 
 AX_MX_UMX = {'identify': [['I10\r\n'], ['I10 A %s']],
-             'read': [['SU\r\n'], ['S S %s %s']],
+             'read': [['SU\r\n'], ['S S %s ']],
              'id': 70}
 
 AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
              'beep': [['DB 1\r\n'], ['beep']],
-             'read': [['S\r\n'], ['%s']],
+             'read': [['S\r\n'], ['Got measurement: %s Press continue.']],
              'tare': [['T\r\n'], ['Tare']],
+             'open door': [['WI 0\r\n'], ['Opening door', 'Got reading: %s. Press Continue.', 'Error: failed to open door']],
+             'close door': [['WI 1\r\n'], ['Closing door', 'Door closed', 'Error: failed to close door']],
              'stab time':  'Stabilizing: %s s',
              'id': 99}
 
 
 # -----------------------------------------------------------------------------------
 
-comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT}
+comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT, 41: AT_MT_UMT}
+
+
+#-------------------------------MASSCODE INPUT DICTIONARIES--------------------------
+massInfo = {'nominal': [],
+            'acceptcorrect': [],
+            'cgravity': [],
+            'gravgrad': None,
+            'volume': [],
+            'density': [],
+            'coexpans': [],
+            'config': [],
+            'restraintpos': [],
+            'checkpos': [],
+            'restraintnew': [],
+            'add': [],
+            'balstd': [],
+            'error': [],
+            'envirouncertainty': [],
+            'volumecov': []}

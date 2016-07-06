@@ -161,6 +161,11 @@ class ComparatorUi(QObject):
                         with open('%s/data_dict_%s.json' % (base_path, str(run_number)), 'w+') as fp:
                             json.dump(self.data_dict, fp)
                         # ---------------------------------------------------------
+
+                        # TODO: Call the masscode here with the updated dictionaries.
+                        # Change the data_dict from recipe_maker.py
+                        # If it is a workdown, save the dictionaries into a json file and
+                        # call the json file when the workdown is done
                         input_file = generate_input_file(self.input_file_path,
                                                          self.main_dict,
                                                          self.data_dict[runs[self.run]],
@@ -174,8 +179,6 @@ class ComparatorUi(QObject):
                         print command
                         t = Thread(target=call, args=(command,))
                         t.start()
-
-                        # TODO: Parse python output file, Send data to database, Update graphs
 
                         # Increment run index
                         self.run += 1

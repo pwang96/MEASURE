@@ -33,16 +33,20 @@ def populate_table_widget(cls):
         item = cls.ui.weightTable.verticalHeaderItem(n)
         item.setText(_translate("MainWindow", "Pos. %s" % (n+1), None))
 
-        # Insert Combobox for roles
+        # Insert Combobox for roles in the second column
         roles = QtGui.QComboBox()
         roles.addItems(role_options)
         cls.ui.weightTable.setCellWidget(n, 1, roles)
 
-        # Insert Text edit for cog
+        # Insert the checkboxes for sum in the third column
+        sums = QtGui.QCheckBox()
+        cls.ui.weightTable.setCellWidget(n, 2, sums)
+
+        # Insert Text edit for cog in the fourth column
         cog = QtGui.QLineEdit()
         cog.setAcceptDrops(False)
-        cls.ui.weightTable.setCellWidget(n, 2, cog)
-        cls.ui.weightTable.cellWidget(n, 2).setText("0")
+        cls.ui.weightTable.setCellWidget(n, 3, cog)
+        cls.ui.weightTable.cellWidget(n, 3).setText("0")
 
         # Make table un editable
         cls.ui.weightTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)

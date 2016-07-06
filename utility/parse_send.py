@@ -36,7 +36,7 @@ def parse_output(filepath):
             # beginning of if statements and parsing
             if line_counter < 15:  # all the one time info in headers
                 if 'DateTime' in line:
-                    regex = r'(\d*-\d*-\d*)'
+                    regex = r'(\d*-\d*-\d* \d*\:\d*)'
                     dict['date'] = re.findall(regex, line)[0]
 
                 if 'BALANCE' in line:
@@ -196,5 +196,8 @@ def send_output(output, db):
     db.push_check_weight_data(internal_dict)
     db.push_unknown1_data(external_dict)
     db.push_unknown2_data(external_dict)
+
+    return internal_dict['restraint name'], internal_dict['check name'],\
+           external_dict['unknown1 name'], external_dict['unknown2 name']
 
 

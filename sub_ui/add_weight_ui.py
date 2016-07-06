@@ -3,6 +3,7 @@ __author__ = 'masslab'
 
 from PyQt4 import QtGui, QtCore, uic
 from PyQt4.QtCore import QObject
+from populate_ui.populate_tree_widget import populate_tree_widget
 
 
 class AddWeightUI(QObject):
@@ -11,12 +12,13 @@ class AddWeightUI(QObject):
     This UI opens when the user clicks the button "Edit Weights" in the DB Access tab of the Main UI
     """
 
-    def __init__(self, db):
+    def __init__(self, cls):
         """
 
-        :param db: This is an instance of MainUI.db, allowing this class to access databaseORM
+        :param cls: This is an instance of MainUI, allowing this class to access databaseORM
         """
-        self.db = db
+        self.db = cls.db
+        self.cls = cls
 
         super(QObject, self).__init__()
         self.window = QtGui.QDialog(None, QtCore.Qt.WindowSystemMenuHint |
@@ -56,7 +58,12 @@ class AddWeightUI(QObject):
         self.dict["vol"] = self.ui.volEdit.text()
         self.dict["comments"] = self.ui.commentsEdit.text()
 
-        self.db.add_weight(self.dict)
+        self.db.add_weight(self.dict)  # add the weight to the database
+
+        # Update the weight tree in the calibrations tab
+        self.cls.ui.weightTree.clear()
+        populate_tree_widget(self.cls)
+
         self.window.close()
 
     def __exit__(self):

@@ -20,7 +20,7 @@ def data_structure_weights(cls):
         if len(weight_str.split("|")) == 3:
             weight_id = weight_str.split("|")[1]
             weight_name = weight_str.split("|")[2].lstrip()
-            result = cls.db.external_weight_data(weight_id)
+            result = cls.db.get_external_weight_data(weight_id)
             nominal = str(format(result[1], ".1f"))
             density = str(format(result[2], ".6f"))
             coeff_exp = str(format(result[4], ".6f"))
@@ -28,7 +28,9 @@ def data_structure_weights(cls):
             units = str(result[5])
             cls.main_dict['weight history id'][i] = str(result[0])
             cls.main_dict['weight internal'][i] = 0
-            cls.main_dict['weight info'][i] = [weight_name + " "*(16-len(weight_name)) + "\t" + nominal + "\t" + density + "\t" + coeff_exp + "\t" + accepted]
+            cls.main_dict['weight info'][i] = ['{:<16}'.format(weight_name) + '{:>10}'.format(nominal) +
+                                               '{:>10}'.format(density) + '{:>10}'.format(coeff_exp) +
+                                               '{:>10}'.format(accepted)]
             cls.main_dict['weight type b'][i] = None
             cls.main_dict['weight between'][i] = None
             cls.main_dict['weight density uncert'][i] = str(format(result[3], ".6f"))
@@ -37,7 +39,7 @@ def data_structure_weights(cls):
         else:
             weight_id = weight_str.split("|")[0]
             weight_name = weight_str.split("|")[1].lstrip()
-            result = cls.db.internal_weight_data(weight_id)
+            result = cls.db.get_internal_weight_data(weight_id)
             nominal = str(format(result[1], ".1f"))
             density = str(format(result[2], ".6f"))
             coeff_exp = str(format(result[4], ".6f"))
