@@ -57,13 +57,18 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
         input_file.write("\n")
         # input_file.write("DATE\t%s\n" % time.strftime("%m %d %Y"))
         input_file.write('%s UNITS\n' % main_dict['units'])
-        input_file.write("TYPE B UNCERTAINTY\t%s\n" % main_dict['restraint type b'])
+        if len(main_dict['restraint uncert']) == 1:
+            input_file.write("TYPE B UNCERTAINTY\t%s\n" % main_dict['restraint uncert'])
+        else:
+            input_file.write("TYPE A, B UNCERTAINTIES\t%s, %s\n" % (main_dict['restraint uncert'][0],
+                                                                    main_dict['restraint uncert'][1]))
         # input_file.write("RESTRAINT IDENTIFICATION\t%s\n" %cls.settings_dict["RESTRAINT IDENTIFICATION"])
         input_file.write("\n")
         input_file.write("BALANCE CODE\t%s\n" % main_dict['balance id'])
         # input_file.write("CHECK STANDARD\t%s\n" %cls.settings_dict["CHECK STANDARD"])
         input_file.write("READ TEMPERATURE PRESSURE HUMIDITY\n")
         for row in environment:
+            row = [str(i) for i in row]
             input_file.write('\t'.join(row) + '\n')
         input_file.write("END OF ENVIRONMENT\n")
         input_file.write("!Environmental data is corrected before database entry.\n")
@@ -104,7 +109,7 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
         input_file.write("\n")
         input_file.write("READ OBSERVATIONS\n")
         for i in observation:
-            input_file.write(str(i).format(".6f")+"\n")
+            input_file.write(str(round(float(i), 6)) + "\n")
         input_file.write("END\n")
         input_file.write("\n")
         fn = filename[:]

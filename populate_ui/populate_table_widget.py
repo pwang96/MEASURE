@@ -38,9 +38,9 @@ def populate_table_widget(cls):
         roles.addItems(role_options)
         cls.ui.weightTable.setCellWidget(n, 1, roles)
 
-        # Insert the checkboxes for sum in the third column
-        sums = QtGui.QCheckBox()
-        cls.ui.weightTable.setCellWidget(n, 2, sums)
+        # Insert the checkboxes for new restraints in the third column
+        new_res = QtGui.QCheckBox(text='This weight will be the restraint in the next series')
+        cls.ui.weightTable.setCellWidget(n, 2, new_res)
 
         # Insert Text edit for cog in the fourth column
         cog = QtGui.QLineEdit()

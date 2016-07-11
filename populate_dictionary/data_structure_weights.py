@@ -30,7 +30,7 @@ def data_structure_weights(cls):
             cls.main_dict['weight internal'][i] = 0
             cls.main_dict['weight info'][i] = ['{:<16}'.format(weight_name) + '{:>10}'.format(nominal) +
                                                '{:>10}'.format(density) + '{:>10}'.format(coeff_exp) +
-                                               '{:>10}'.format(accepted)]
+                                               '{:>12}'.format(accepted)]
             cls.main_dict['weight type b'][i] = None
             cls.main_dict['weight between'][i] = None
             cls.main_dict['weight density uncert'][i] = str(format(result[3], ".6f"))
@@ -47,7 +47,9 @@ def data_structure_weights(cls):
             units = str(result[8])
             cls.main_dict['weight history id'][i] = str(result[0])
             cls.main_dict['weight internal'][i] = 1
-            cls.main_dict['weight info'][i] = [weight_name + " "*(16-len(weight_name)) + "\t" + nominal + "\t" + density + "\t" + coeff_exp + "\t" + accepted]
+            cls.main_dict['weight info'][i] = ['{:<16}'.format(weight_name) + '{:>10}'.format(nominal) +
+                                               '{:>10}'.format(density) + '{:>10}'.format(coeff_exp) +
+                                               '{:>12}'.format(accepted)]
             cls.main_dict['weight type b'][i] = str(format(result[6], ".6f"))
             cls.main_dict['weight between'][i] = str(format(result[7], ".6f"))
             cls.main_dict['weight density uncert'][i] = str(format(result[3], ".6f"))
@@ -69,7 +71,7 @@ def data_structure_weights(cls):
     check_between = np.sqrt(np.sum(np.square(check_between)))
 
     # Store weight uncertainty stats
-    cls.main_dict['restraint type b'] = str(format(restraint_type_b, '.5f'))
+    cls.main_dict['restraint uncert'] = str(format(restraint_type_b, '.5f'))
     cls.main_dict['check between'] = str(format(check_between, '.5f'))
     if units == 'M':
         cls.main_dict['units'] = 'METRIC'

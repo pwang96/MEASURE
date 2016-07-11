@@ -23,14 +23,8 @@ def data_structure_addon_weights(cls):
 
                 # Store in settings dictionary for input file
                 cls.main_dict['addon history id'][i].append(result[0])
-                cls.main_dict['addon info'][i].append([addon_name + " "*(16-len(addon_name)) +
-                                                      "\t" + addon_coeff_exp +
-                                                      "\t" + addon_value +
-                                                      "\t" + "0" +
-                                                      "\t" + addon_density])
 
-    for i in cls.main_dict['addon info']:
-        if i:
-            print i
-        else:
-            continue
+                cls.main_dict['addon info'][i].append(['{:<16}'.format(addon_name) + '{:>10}'.format(addon_coeff_exp) +
+                                                       '{:>12}'.format(addon_value) + '{:>6}'.format(0) +
+                                                       '{:>10}'.format(addon_density)])
+

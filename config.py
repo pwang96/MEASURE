@@ -83,20 +83,3 @@ AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
 comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT, 41: AT_MT_UMT}
 
 
-#-------------------------------MASSCODE INPUT DICTIONARIES--------------------------
-massInfo = {'nominal': [],
-            'acceptcorrect': [],
-            'cgravity': [],
-            'gravgrad': None,
-            'volume': [],
-            'density': [],
-            'coexpans': [],
-            'config': [],
-            'restraintpos': [],
-            'checkpos': [],
-            'restraintnew': [],
-            'add': [],
-            'balstd': [],
-            'error': [],
-            'envirouncertainty': [],
-            'volumecov': []}

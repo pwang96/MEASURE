@@ -39,7 +39,7 @@ def object_settings(cls):
     item = cls.weightTable.horizontalHeaderItem(1)
     item.setText(_translate("MainWindow", "Role", None))
     item = cls.weightTable.horizontalHeaderItem(2)
-    item.setText(_translate("MainWindow", "Sum", None))
+    item.setText(_translate("MainWindow", "New Restraint", None))
     item = cls.weightTable.horizontalHeaderItem(3)
     item.setText(_translate("MainWindow", "CoG Diff [cm]", None))
     item = cls.weightTable.horizontalHeaderItem(4)

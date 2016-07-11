@@ -94,7 +94,7 @@ class MainUI(QObject):
                  'weight between': [],
                  'weight density uncert': [],
                  'cg differences': [],
-                 'restraint type b': None,
+                 'restraint uncert': None,  # Only type B if not a workdown, [type A, type B] if it is a workdown
                  'check between': None,
                  'units': None,
                  'user id': None,

@@ -4,6 +4,7 @@ import datetime
 import time
 import json
 import re
+import os
 from subprocess import call
 from threading import Thread
 from multiprocessing.pool import ThreadPool
@@ -12,14 +13,18 @@ from PyQt4.QtCore import QObject, pyqtSignal, Qt, QTimer
 from PyQt4.QtGui import QApplication, QCursor
 from serial import Serial
 from file_generators.generate_input_file import generate_input_file
+from file_generators.generate_json_file import generate_json_file
 from control.manual_recipe_maker import manual_short_command
 from control.manual_recipe_maker import manual_id_command, manual_short_command_no_resp
-from config import comparator_matching, masscode_path, massInfo
+from config import comparator_matching, masscode_path
+from populate_dictionary.populate_masscode_dict import populate_massInfo
+from populate_dictionary.masscode_dicts import massInfo
 from utility.show_dictionary import pretty
 from config import base_path
 from utility.serial_ports import serial_ports
 import Queue
 from PyQt4.QtTest import QTest
+from utility.new_masscode import MassCode
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -68,6 +73,10 @@ class ManualBalanceUI(QObject):
         # Populate the weights/positions table
         self.populate_reminder_table(cls)
 
+        # Construct the recent history table
+        self.ui.historyTable.setColumnCount(4)
+        self.ui.historyTable.setHorizontalHeaderLabels(["Measurement", "Temp", "Pressure", "Humidity"])
+
         # Populate the port combo box with available COM ports
         self.ui.portCombo.addItems(serial_ports())
 
@@ -92,7 +101,12 @@ class ManualBalanceUI(QObject):
         self.AB = 1  # which round of the ABBA are we on? 1: A1B1, 2: B2A2
         self.step = 1  # which step are we on? 8 steps per cycle
         self.readout = 0  # balance readout
+        self.temp = 0  # Latest temperature reading
+        self.press = 0  # Latest pressure reading
+        self.humid = 0  # Latest humidity reading
         self.run = 1  # how many runs we're doing (will be 1 for manual)
+        self.workdown = False  # is this part of a workdown? Not the initial series
+        self.input_file_path = ''  # input file path
 
         # stability time in seconds
         self.stab_time = 5
@@ -108,7 +122,10 @@ class ManualBalanceUI(QObject):
         for key in self.data_dict.keys():
             self.data_dict[key] = dict.fromkeys(['observation ' + str(i).zfill(2) for i in range((len(self.main_dict['design matrix'])))])
             for key2 in self.data_dict[key].keys():
-                self.data_dict[key][key2] = dict.fromkeys(['Set1 1', 'Set2 1', 'Set2 2', 'Set1 2'])
+                self.data_dict[key][key2] = dict.fromkeys(['A1', 'B1', 'B2', 'A2'])
+
+        # initialize the massInfo dictionary
+        self.massInfo = massInfo
 
         # Execute the ui
         self.window.exec_()
@@ -140,50 +157,43 @@ class ManualBalanceUI(QObject):
 
         # If the row counter is past the number of design matrix rows, save everything and quit
         if self.row_counter >= len(self.main_dict['design matrix']):
-            self.status_signal2.emit('Finished with measurements.')
-            # Prompt user for desired path
-            file_dialog = QtGui.QFileDialog()
-            input_file_path = QtGui.QFileDialog.getSaveFileName(file_dialog, 'Save as...',
-                                                                base_path + "\\" + datetime.date.today().strftime(
-                                                                         "%Y%m%d")).replace('/', '\\')
+
+            self.status_signal2.emit('Finished with measurements. Generating input file.')
+            self.ui.continueButton.setEnabled(0)  # Disable continue button while file is being written
+            QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
             self.isMeasure = False  # put variables to 0 so no if statements will run
             self.set = 0
 
-            # TODO: call the masscode here and return the results
-            # If it is a workdown, save in json file and call json file when workdown finishes
-            # There might be a better way to assign all the values to the massInfo dictionary
-            # massInfo['nominal'] =
-            # massInfo['acceptcorrect']   # IF STATEMENT NEEDED FOR WORKDOWNS.
-            # massInfo['cgravity']
-            # massInfo['gravgrad']
-            # massInfo['volume']
-            # massInfo['coexpans']
-            # massInfo['config']
-            # massInfo['restraintpos']
-            # massInfo['checkpos']
-            # massInfo['restraintnew']
-            # massInfo['add']
-            # massInfo['balstd']
-            # massInfo['error']
-            # massInfo['envirouncertainty']
-            # massInfo['volumecov']
-            # massInfo['sensitivity']
+            # Populate the massInfo dictionary based on the main_dict
+            self.massInfo = populate_massInfo(self.main_dict, massInfo, self.workdown)
+            # pretty(self.massInfo)
+            # print 'END OF MASS INFO'
+            # pretty(self.data_dict)
+
+            output = MassCode(self.massInfo, self.data_dict)
 
             runs = sorted(self.data_dict.keys())
-            input_file = generate_input_file(input_file_path,
+            input_file = generate_input_file(self.input_file_path,
                                              self.main_dict,
                                              self.data_dict[runs[self.run-1]],
                                              1,
                                              len(self.data_dict.keys()))
+
             output_file = input_file[:].replace('.ntxt', '.nout')
+
+            # Create the json file
+            json_file_path = generate_json_file(self.input_file_path, self.main_dict, output)
+            print json_file_path
 
             # Run input file
             command = '"%s" "%s" "%s"\n' % (str(masscode_path), str(input_file), str(output_file))
             print command
             t = Thread(target=call, args=(command,))
             t.start()
+            QApplication.restoreOverrideCursor()
 
+            QTest.qWait(2000)
             self.window.close()
 
         try:
@@ -236,7 +246,12 @@ class ManualBalanceUI(QObject):
                 print 'no motorized door'
                 self.status_signal2.emit('Got reading: %s. Press Continue.' % self.readout)
 
+            QTest.qWait(2000)  # wait 2 seconds to streamline process
+
             self.save_data()  # save the current readout and environmentals into the dictionary
+            self.update_history_table(self.readout, self.temp, self.press, self.humid)  # update the history table
+
+            self.quicksave()  # save the latest info into the temp file
 
             QApplication.restoreOverrideCursor()
             self.ui.continueButton.setEnabled(1)
@@ -258,7 +273,7 @@ class ManualBalanceUI(QObject):
             # Look at which weights need to be put on and display the weight names
             for weightNum in set1:
                 weights.append(str(weightNum) + ' - ' + str(self.ui.weightReminder.item(weightNum-1, 0).text()))
-            self.status_signal2.emit('Put on weight(s): %s \nPress Continue when loaded.' % weights)
+            self.status_signal2.emit('Put on weight(s): %s \nPress Continue when balance is stable.' % weights)
             self.isMeasure = True
             if self.AB == 1:
                 self.set = 2
@@ -269,7 +284,7 @@ class ManualBalanceUI(QObject):
             # same as above
             for weightNum in set2:
                 weights.append(str(weightNum) + ' - ' + str(self.ui.weightReminder.item(weightNum-1, 0).text()))
-            self.status_signal2.emit('Put on weight(s): %s \nPress Continue when loaded.' % weights)
+            self.status_signal2.emit('Put on weight(s): %s \nPress Continue when balance is stable.' % weights)
             self.isMeasure = True
             if self.AB == 2:
                 self.set = 1
@@ -319,6 +334,21 @@ class ManualBalanceUI(QObject):
             item = cls.ui.weightTable.verticalHeaderItem(i)
             item.setText("Pos. %s" % (i + 1))
 
+    def update_history_table(self, reading, temp, press, humid):
+        # Has the last four measurements recorded
+        if self.ui.historyTable.rowCount() == 4:
+            self.ui.historyTable.removeRow(3)  # if there are four rows, remove the last one
+        self.ui.historyTable.insertRow(0)  # Create a row at the top
+        measurement = QtGui.QTableWidgetItem(QtCore.QString(str(reading)))
+        temperature = QtGui.QTableWidgetItem(QtCore.QString(str(temp)))
+        pressure = QtGui.QTableWidgetItem(QtCore.QString(str(press)))
+        humidity = QtGui.QTableWidgetItem(QtCore.QString(str(humid)))
+        self.ui.historyTable.setItem(0, 0, measurement)
+        self.ui.historyTable.setItem(0, 1, temperature)
+        self.ui.historyTable.setItem(0, 2, pressure)
+        self.ui.historyTable.setItem(0, 3, humidity)
+
+
     def click_connect(self):
         """ Establish serial connection with balance
 
@@ -357,42 +387,72 @@ class ManualBalanceUI(QObject):
             # Write error to status browser
             self.status_signal2.emit('Error in connection object: ' + str(e))
 
+        # Open the save file dialog to save the tmp files, json files, and final input files
+        # Prompt user for desired path
+        file_dialog = QtGui.QFileDialog()
+        self.input_file_path = QtGui.QFileDialog.getSaveFileName(file_dialog, 'Save as...',
+                                                                 base_path + "\\" + datetime.date.today().strftime(
+                                                                     "%Y%m%d")).replace('/', '\\')
+
     def save_data(self):
         # Get the latest temperatures
-        press = self.db.latest_barometer_data(self.main_dict['barometer id'])[0]
-        temp = self.db.latest_thermometer_data(self.main_dict['thermometer id'])[0]
-        humid = self.db.latest_hygrometer_data(self.main_dict['hygrometer id'])[0]
+        self.press = self.db.latest_barometer_data(self.main_dict['barometer id'])[0]
+        self.temp = self.db.latest_thermometer_data(self.main_dict['thermometer id'])[0]
+        self.humid = self.db.latest_hygrometer_data(self.main_dict['hygrometer id'])[0]
 
         if self.step == 2:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['Set1 1'] \
-                = [str(self.readout), temp, press, humid]
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['A1'] \
+                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 4:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['Set2 1'] \
-                = [str(self.readout), temp, press, humid]
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['B1'] \
+                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 6:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['Set2 2'] \
-                = [str(self.readout), temp, press, humid]
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['B2'] \
+                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 8:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['Set1 2'] \
-                = [str(self.readout), temp, press, humid]
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['A2'] \
+                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
     def workdown_check(self):
         if self.ui.workdownCheck.isChecked():
-
+            self.workdown = True
             file_dialog = QtGui.QFileDialog()
-            file_name = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select the PREVIOUS output file", base_path,
-                                                            "*.nout")
+            file_name = QtGui.QFileDialog.getOpenFileName(file_dialog, "Select the PREVIOUS output file", base_path,
+                                                            "*.json")
             try:
-                with open(str(file_name[0]), 'r') as f:
-                    text = f.readline()
-                    this = text[0:5]
-                    # TODO: Parse this output file for whatever we need
-                print this
+                with open(str(file_name[0])) as f:
+                    data = json.load(f)
+                    # TODO: Parse this output file for corrections of new restraint, type A/B error of new restraint
+
+                    index_of_new_restraint = data['next restraint vec'].index(1)  # which weight is the new r
+                    index_of_current_restraint = self.main_dict['restraint vec'].index(1)
+                    self.massInfo['acceptcorrect'][index_of_current_restraint] \
+                        = data['corrections'][index_of_new_restraint]  # next restraint becomes current restraint
+                    self.massInfo['error'] \
+                        = [data['type A'][index_of_new_restraint], data['type B'][index_of_new_restraint]]
+                print self.massInfo['acceptcorrect'], '\n', self.massInfo['error']
             except IndexError:
                 pass
+
+    def quicksave(self):
+        # Saves the latest data into a .tmp file so if something goes wrong, parts of the run will still be there
+        if os.path.isfile(self.input_file_path + '.tmp'):
+            with open(self.input_file_path + '.tmp', 'a') as f:
+                f.write('Reading: ' + str(self.readout) +
+                        ' Temp: ' + str(self.temp) +
+                        ' Press: ' + str(self.press) +
+                        ' Humid: ' + str(self.humid) + '\n')
+        else:
+            with open(self.input_file_path + '.tmp', 'w+') as f:
+                f.write('Calibration started ' + datetime.datetime.now().strftime('%m/%d/%Y %H:%M') + '\n')
+                f.write('Reading: ' + str(self.readout) +
+                        ' Temp: ' + str(self.temp) +
+                        ' Press: ' + str(self.press) +
+                        ' Humid: ' + str(self.humid) + '\n')
+        f.close()
 
     def cancel(self):
         self.window.close()
