@@ -110,10 +110,10 @@ class RecipeMaker:
             self.data_d['run %02.0f' % (i+1)] = {}
             for index, row in enumerate(design):
                 self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)] = {}
-                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['A1'] = []
-                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['B1'] = []
-                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['B2'] = []
-                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['A2'] = []
+                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['1-A1'] = []
+                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['2-B1'] = []
+                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['3-B2'] = []
+                self.data_d['run %02.0f' % (i+1)]['observation %02.0f' % (index+1)]['4-A2'] = []
                 p1 = [a for a, b in enumerate(row) if b == 1][0] + 1
                 p2 = [a for a, b in enumerate(row) if b == -1][0] + 1
                 self._move_to(p1)

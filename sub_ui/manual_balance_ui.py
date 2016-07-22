@@ -36,7 +36,7 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
-class ManualBalanceUI(QObject):
+class ManualBalanceUI(QtGui.QWidget):
     """ Provides functionality to the sub ui for manual balances.
 
     The interface allows the user to establish a connection to the balance and run a manual calibration.
@@ -51,10 +51,11 @@ class ManualBalanceUI(QObject):
     # PyQt signal-slot mechanism (signal can be emitted anywhere and its slot method is executed)
     status_signal2 = pyqtSignal(str)
     data_signal = pyqtSignal(str)
+    # keyPressed = QtCore.pyqtSignal(QtCore.QEvent)
 
     def __init__(self, cls):
 
-        super(QObject, self).__init__()
+        super(QtGui.QWidget, self).__init__()
         self.main_dict = cls.main_dict
         self.db = cls.db
 
@@ -63,6 +64,7 @@ class ManualBalanceUI(QObject):
                                     QtCore.Qt.WindowMinMaxButtonsHint)
 
         self.window.setSizeGripEnabled(True)
+        self.setFocusPolicy(Qt.ClickFocus)
 
         # load the UI
         self.ui = uic.loadUi('sub_ui/ManualBalanceUI.ui', self.window)
@@ -76,9 +78,13 @@ class ManualBalanceUI(QObject):
         # Construct the recent history table
         self.ui.historyTable.setColumnCount(4)
         self.ui.historyTable.setHorizontalHeaderLabels(["Measurement", "Temp", "Pressure", "Humidity"])
+        self.ui.historyTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
         # Populate the port combo box with available COM ports
         self.ui.portCombo.addItems(serial_ports())
+
+        # Disable the connect button until the stabilization time has been chosen
+        self.ui.connectButton.setEnabled(0)
 
         # Disable the continue button until a connection is established
         self.ui.continueButton.setEnabled(0)
@@ -109,8 +115,8 @@ class ManualBalanceUI(QObject):
         self.input_file_path = ''  # input file path
 
         # stability time in seconds
-        self.stab_time = 5
-        self.og_stab_time = 5
+        self.stab_time = 35
+        self.og_stab_time = 35
 
         # initialize the flags dictionary
         self.flags = {'connection': 0, 'settings': 0}
@@ -122,7 +128,7 @@ class ManualBalanceUI(QObject):
         for key in self.data_dict.keys():
             self.data_dict[key] = dict.fromkeys(['observation ' + str(i).zfill(2) for i in range((len(self.main_dict['design matrix'])))])
             for key2 in self.data_dict[key].keys():
-                self.data_dict[key][key2] = dict.fromkeys(['A1', 'B1', 'B2', 'A2'])
+                self.data_dict[key][key2] = dict.fromkeys(['1-A1', '2-B1', '3-B2', '4-A2'])
 
         # initialize the massInfo dictionary
         self.massInfo = massInfo
@@ -134,10 +140,34 @@ class ManualBalanceUI(QObject):
         self.ui.continueButton.clicked.connect(self.proceed)
         self.ui.cancelButton.clicked.connect(self.cancel)
         self.ui.stabTimeEdit.returnPressed.connect(self.ui.connectButton.click)
+        self.ui.stabTimeEdit.textChanged.connect(self.enable_connect)
         self.ui.connectButton.clicked.connect(self.click_connect)
         self.status_signal2.connect(self.status_slot2)
         self.ui.workdownCheck.stateChanged.connect(self.workdown_check)
         self.stab_timer.timeout.connect(self.stab_timer_slot)
+        # self.keyPressed.connect(self.on_key)
+
+    #def keyPressEvent(self, event):
+    #    event.accept()
+    #    if event.key() == QtCore.Qt.Key_Q:
+    #        print "Killing"
+    #        self.window.close()
+    #    elif event.key() == QtCore.Qt.Key_0:
+    #        print 'pressed 0'
+    #   elif event.key() == QtCore.Qt.Key_Enter and self.ui.continueButton.isEnabled():
+    #        self.proceed()
+    #    else:
+    #        print 'key pressed'
+
+    #def on_key(self, event):
+    #    if event.key() == QtCore.Qt.Key_Enter and self.ui.continueButton.isEnabled():
+    #        self.proceed()
+    #    elif event.key() == QtCore.Qt.Key_Q:
+    #        self.window.close()
+
+    def enable_connect(self):
+        if not self.ui.connectButton.isEnabled():
+            self.ui.connectButton.setEnabled(1)
 
     def stab_timer_slot(self):
         if self.stab_time > 0:
@@ -166,7 +196,7 @@ class ManualBalanceUI(QObject):
             self.set = 0
 
             # Populate the massInfo dictionary based on the main_dict
-            self.massInfo = populate_massInfo(self.main_dict, massInfo, self.workdown)
+            self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
             # pretty(self.massInfo)
             # print 'END OF MASS INFO'
             # pretty(self.data_dict)
@@ -183,7 +213,7 @@ class ManualBalanceUI(QObject):
             output_file = input_file[:].replace('.ntxt', '.nout')
 
             # Create the json file
-            json_file_path = generate_json_file(self.input_file_path, self.main_dict, output)
+            json_file_path = generate_json_file(self.input_file_path, self.main_dict, self.data_dict, output)
             print json_file_path
 
             # Run input file
@@ -336,17 +366,23 @@ class ManualBalanceUI(QObject):
 
     def update_history_table(self, reading, temp, press, humid):
         # Has the last four measurements recorded
-        if self.ui.historyTable.rowCount() == 4:
-            self.ui.historyTable.removeRow(3)  # if there are four rows, remove the last one
-        self.ui.historyTable.insertRow(0)  # Create a row at the top
         measurement = QtGui.QTableWidgetItem(QtCore.QString(str(reading)))
         temperature = QtGui.QTableWidgetItem(QtCore.QString(str(temp)))
         pressure = QtGui.QTableWidgetItem(QtCore.QString(str(press)))
         humidity = QtGui.QTableWidgetItem(QtCore.QString(str(humid)))
-        self.ui.historyTable.setItem(0, 0, measurement)
-        self.ui.historyTable.setItem(0, 1, temperature)
-        self.ui.historyTable.setItem(0, 2, pressure)
-        self.ui.historyTable.setItem(0, 3, humidity)
+
+        if self.ui.historyTable.rowCount() >= 4:
+            # if there are four rows, clear the list
+            #self.ui.historyTable.clearContents()
+            for i in range(4):
+                self.ui.historyTable.removeRow(0)
+
+        row_num = self.ui.historyTable.rowCount()
+        self.ui.historyTable.insertRow(row_num)  # Create a row at the bottom
+        self.ui.historyTable.setItem(row_num, 0, measurement)
+        self.ui.historyTable.setItem(row_num, 1, temperature)
+        self.ui.historyTable.setItem(row_num, 2, pressure)
+        self.ui.historyTable.setItem(row_num, 3, humidity)
 
 
     def click_connect(self):
@@ -425,7 +461,6 @@ class ManualBalanceUI(QObject):
             try:
                 with open(str(file_name[0])) as f:
                     data = json.load(f)
-                    # TODO: Parse this output file for corrections of new restraint, type A/B error of new restraint
 
                     index_of_new_restraint = data['next restraint vec'].index(1)  # which weight is the new r
                     index_of_current_restraint = self.main_dict['restraint vec'].index(1)
@@ -455,7 +490,12 @@ class ManualBalanceUI(QObject):
         f.close()
 
     def cancel(self):
-        self.window.close()
+        quit_msg = "Are you sure you want to quit?"
+        reply = QtGui.QMessageBox.question(self, 'Message:', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            self.window.close()
+        else:
+            pass
 
     def __exit__(self):
         self.window.close()

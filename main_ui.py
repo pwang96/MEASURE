@@ -2,6 +2,8 @@ __author__ = 'masslab'
 
 import sys
 import re
+import os
+import json
 from threading import Thread
 from Queue import Queue
 from PyQt4 import QtGui, uic
@@ -15,7 +17,6 @@ from sub_ui.error_message import ErrorMessage
 from sub_ui.login import LoginUi
 from populate_ui import PopulateUI
 from populate_dictionary import populate_dictionary
-# ------------------------------------------------------------------------------------------------------
 from plots.control_chart import ControlChart
 from plots.Environmentals import Environmentals
 from plots.fileplot_environment import FileEnvironmentPlot
@@ -27,7 +28,6 @@ from sub_ui.manual_balance_ui import ManualBalanceUI
 from sub_ui.edit_stations_ui import EditStationUI
 from sub_ui.add_station_ui import AddStationUI
 from sub_ui.custom_design_matrix import CustomDesignUI
-import os
 from sqlalchemy.exc import OperationalError
 from utility.parse_send import parse_output, send_output
 # ------------------------------------------------------------------------------------------------------
@@ -196,7 +196,8 @@ class MainUI(QObject):
     def click_browse(self):
         """ Opens a browser to look for files to parse and graph"""
         file_dialog = QtGui.QFileDialog()
-        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot", output_path, "*.nout")
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot",
+                                                        output_path, "Output files (*.json *.nout)")
         self.ui.outputList.addItems(file_names)
 
     def checked_control_chart(self):
@@ -289,10 +290,18 @@ class MainUI(QObject):
             filename = self.ui.outputList.currentItem().text()
         except AttributeError:
             ErrorMessage("No file selected!")
-        with open(filename) as f:
-            text = f.readlines()
-            title = os.path.basename(str(f.name))
-        self.fileplot = FileEnvironmentPlot(text)
+
+        # Check if type is json or nout
+        if 'nout' in filename:
+            with open(filename) as f:
+                text = f.readlines()
+                title = os.path.basename(str(f.name))
+            self.fileplot = FileEnvironmentPlot(text, 'nout')
+        elif 'json' in filename:
+            with open(filename) as f:
+                data = json.load(f)
+                title = os.path.basename(str(f.name))
+            self.fileplot = FileEnvironmentPlot(data, 'json')
         self.ui.plotArea.addSubWindow(self.fileplot).setWindowTitle("Environments Graph for %s" % title)
         self.fileplot.show()
 
@@ -315,7 +324,7 @@ class MainUI(QObject):
         self.ui.outputList.clear()
         try:
             self.massplot = FileMassPlot(self.db, r, c, u1, u2)
-            self.ui.plotArea.addSubWindow(self.massplot).setWindowTitle("Mass control charts")
+            self.ui.plotArea.adSubWindow(self.massplot).setWindowTitle("Mass control charts")
             self.massplot.show()
         except UnboundLocalError:
             pass

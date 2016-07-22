@@ -14,8 +14,12 @@ datetime_fmt = m_dates.DateFormatter('%b %d, %H:%M')
 
 class FileEnvironmentPlot(FigureCanvasQTAgg):
     """ Formats matplotlib figure for environmental data """
-    def __init__(self, text):
+    def __init__(self, data, type):
+        """
 
+        :param data: can be a dictionary in the case of a json file, otherwise a text (f.readlines())
+        :param type: json or nout, the type of output file that is sent in
+        """
         self.counter = 0
         self.fig = plt.figure(facecolor='white')
         self.ax1 = self.fig.add_subplot(311)
@@ -43,9 +47,12 @@ class FileEnvironmentPlot(FigureCanvasQTAgg):
         plt.setp(self.ax2.get_yticklabels(), fontsize=10)
         plt.setp(self.ax3.get_yticklabels(), fontsize=10)
 
-        self.extract_data(text)
+        if type == 'json':
+            self.extract_data_json(data)
+        elif type == 'nout':
+            self.extract_data_nout(data)
 
-    def extract_data(self, text):
+    def extract_data_nout(self, text):
         # takes the text passed in from main UI and extracts the environmental data
         temp = []  # initialize the environment lists
         press = []
@@ -71,6 +78,19 @@ class FileEnvironmentPlot(FigureCanvasQTAgg):
             self.draw_data(temp, press, humid)
         except UnboundLocalError:
             ErrorMessage('No Data in this file!')
+
+    def extract_data_json(self, text):
+        # takes the json file passed from mainUI and extracts environmental data
+        temp = []
+        press = []
+        humid = []
+        for observation_num in text['run 01'].keys():
+            for measurement in text['run 01'][observation_num].keys():
+                temp.append(text['run 01'][observation_num][measurement][1])
+                press.append(text['run 01'][observation_num][measurement][2])
+                humid.append(text['run 01'][observation_num][measurement][3])
+
+        self.draw_data(temp, press, humid)
 
     def draw_data(self, temperature, pressure, humidity):
         # takes in the data from extract_data and draws it

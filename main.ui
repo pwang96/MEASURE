@@ -324,25 +324,6 @@ p, li { white-space: pre-wrap; }
            <string>Select masscode input files</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0" alignment="Qt::AlignHCenter">
-            <widget class="QPushButton" name="inputButton">
-             <property name="minimumSize">
-              <size>
-               <width>200</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>200</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Browse...</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QListWidget" name="inputList"/>
            </item>
@@ -362,6 +343,25 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>Run masscode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" alignment="Qt::AlignHCenter">
+            <widget class="QPushButton" name="inputButton">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Browse...</string>
              </property>
             </widget>
            </item>
@@ -472,16 +472,6 @@ p, li { white-space: pre-wrap; }
        <attribute name="title">
         <string>DB Access</string>
        </attribute>
-       <widget class="QTableWidget" name="dbTable">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>921</width>
-          <height>391</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QGroupBox" name="dbViewBox">
         <property name="geometry">
          <rect>
@@ -490,6 +480,12 @@ p, li { white-space: pre-wrap; }
           <width>921</width>
           <height>61</height>
          </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="title">
          <string>Select the database to view</string>
@@ -549,7 +545,7 @@ p, li { white-space: pre-wrap; }
           <x>10</x>
           <y>465</y>
           <width>901</width>
-          <height>51</height>
+          <height>73</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -580,6 +576,24 @@ p, li { white-space: pre-wrap; }
             <string>Edit Machines</string>
            </property>
           </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>921</width>
+          <height>401</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
+         <item>
+          <widget class="QTableWidget" name="dbTable"/>
          </item>
         </layout>
        </widget>

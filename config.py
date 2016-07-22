@@ -79,6 +79,7 @@ AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
 
 
 # -----------------------------------------------------------------------------------
+# This dictionary matches the balance to the set of commands it takes in
 
 comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT, 41: AT_MT_UMT}
 

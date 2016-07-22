@@ -18,6 +18,10 @@ from config import comparator_matching, masscode_path
 from utility.show_dictionary import pretty
 from config import base_path
 from utility.serial_ports import serial_ports
+from populate_dictionary.populate_masscode_dict import populate_massInfo
+from populate_dictionary.masscode_dicts import massInfo
+from utility.new_masscode import MassCode
+from file_generators.generate_json_file import generate_json_file
 
 
 class ComparatorUi(QObject):
@@ -57,18 +61,12 @@ class ComparatorUi(QObject):
                             self.ui.startCalButton: 0,
                             self.ui.stopCalButton: 0,
                             self.ui.exitButton: 1,
-                            self.ui.SettingsButton: 0}
+                            self.ui.SettingsButton: 0,
+                            self.ui.workdownCheck: 1}
 
-        self.settings_ui_dict = {68: AT106HSettings}
+        self.settings_ui_dict = {68: AT106HSettings, 69: AT106HSettings}
 
         self.update_widgets()
-
-        # TEMPORARY FOR DEBUGGING
-        # --------------------------------------------
-        # with open('sub_ui/main_dict.json', 'r') as fp:
-        #     self.main_dict = json.load(fp)
-        # self.db = Database('calib_v2', 'massforce_v2')
-        # ---------------------------------------------
 
         # self.main_dict = main_dict
         self.settings_dict = {}
@@ -79,6 +77,8 @@ class ComparatorUi(QObject):
         self.plot_active = 0
         self.progress_level = 0
         self.progress_length = 0
+        self.massInfo = massInfo
+        self.workdown = False
 
         # Set up the ui
         self.ui.progressBar.setValue(0)
@@ -162,10 +162,17 @@ class ComparatorUi(QObject):
                             json.dump(self.data_dict, fp)
                         # ---------------------------------------------------------
 
-                        # TODO: Call the masscode here with the updated dictionaries.
-                        # Change the data_dict from recipe_maker.py
-                        # If it is a workdown, save the dictionaries into a json file and
-                        # call the json file when the workdown is done
+
+                        # RUN THE NEW MASSCODE
+                        # Populate the massInfo dictionary based on the main_dict
+                        self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
+
+                        output = MassCode(self.massInfo, self.data_dict)
+
+                        json_file_path = generate_json_file(self.input_file_path, self.main_dict, self.data_dict,
+                                                            output)
+                        print json_file_path
+
                         input_file = generate_input_file(self.input_file_path,
                                                          self.main_dict,
                                                          self.data_dict[runs[self.run]],
@@ -198,6 +205,7 @@ class ComparatorUi(QObject):
         self.status_signal.connect(self.status_slot)
         self.data_signal.connect(self.cal_data_slot)
         self.progress_signal.connect(self.progress_slot)
+        self.ui.workdownCheck.stateChanged.connect(self.workdown_check)
 
         QtCore.QObject.connect(self.environment_timer, QtCore.SIGNAL("timeout()"), self.update_environment_table)
 
@@ -286,6 +294,7 @@ class ComparatorUi(QObject):
 .  Runs "execute" in new thread, so balance method execution does
         not interfere with the ui.
         """
+        self.ui.workdownCheck.setEnabled(0)
         if not all(self.flags.values()):
             self.status_signal.emit('Error: Faulty balance connection or incomplete settings')
             return
@@ -331,11 +340,36 @@ class ComparatorUi(QObject):
         if self.plot_active:
             self.e_plot.add_point(t_row[0], p_row[0], h_row[0])
 
+    def workdown_check(self):
+        if self.ui.workdownCheck.isChecked():
+            self.workdown = True
+            file_dialog = QtGui.QFileDialog()
+            file_name = QtGui.QFileDialog.getOpenFileName(file_dialog, "Select the PREVIOUS output file", base_path,
+                                                          "*.json")
+            try:
+                with open(str(file_name[0])) as f:
+                    data = json.load(f)
+
+                    index_of_new_restraint = data['next restraint vec'].index(1)  # which weight is the new r
+                    index_of_current_restraint = self.main_dict['restraint vec'].index(1)
+                    self.massInfo['acceptcorrect'][index_of_current_restraint] \
+                        = data['corrections'][index_of_new_restraint]  # next restraint becomes current restraint
+                    self.massInfo['error'] \
+                        = [data['type A'][index_of_new_restraint], data['type B'][index_of_new_restraint]]
+                print self.massInfo['acceptcorrect'], '\n', self.massInfo['error']
+            except IndexError:
+                pass
+
     def click_stop(self):
         pass
 
     def click_exit(self):
-        self.__exit__()
+        quit_msg = "Are you sure you want to exit?"
+        reply = QtGui.QMessageBox.question(self, 'Message:', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            self.__exit__()
+        else:
+            pass
 
     def __exit__(self):
         self.environment_timer.stop()
