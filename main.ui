@@ -324,10 +324,7 @@ p, li { white-space: pre-wrap; }
            <string>Select masscode input files</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="1" column="0">
-            <widget class="QListWidget" name="inputList"/>
-           </item>
-           <item row="2" column="0" alignment="Qt::AlignHCenter">
+           <item row="3" column="0" alignment="Qt::AlignHCenter">
             <widget class="QPushButton" name="masscodeButton">
              <property name="minimumSize">
               <size>
@@ -342,7 +339,7 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="text">
-              <string>Run masscode</string>
+              <string>Run NEW masscode</string>
              </property>
             </widget>
            </item>
@@ -365,10 +362,101 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="oldMasscodeButton">
+             <property name="text">
+              <string>Run OLD masscode</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="massCodeRemoveButton">
+             <property name="text">
+              <string>Remove Item</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QListWidget" name="inputList"/>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>CHECK UNCERTAINTY</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
        </layout>
+      </widget>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Beautify JSON</string>
+       </attribute>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>901</width>
+          <height>691</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Select json files to beautify </string>
+        </property>
+        <widget class="QPushButton" name="selectFilesButton">
+         <property name="geometry">
+          <rect>
+           <x>320</x>
+           <y>30</y>
+           <width>281</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Select Files</string>
+         </property>
+        </widget>
+        <widget class="QListWidget" name="jsonList">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>70</y>
+           <width>771</width>
+           <height>561</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="beautifyButton">
+         <property name="geometry">
+          <rect>
+           <x>330</x>
+           <y>650</y>
+           <width>291</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Create Output Files</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="beautifyRemoveButton">
+         <property name="geometry">
+          <rect>
+           <x>800</x>
+           <y>370</y>
+           <width>91</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Remove Item</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
@@ -567,6 +655,13 @@ p, li { white-space: pre-wrap; }
           <widget class="QPushButton" name="editWeightButton">
            <property name="text">
             <string>Add Weights</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editExistingWeightButton">
+           <property name="text">
+            <string>Edit Existing Weight</string>
            </property>
           </widget>
          </item>

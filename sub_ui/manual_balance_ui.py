@@ -24,7 +24,7 @@ from config import base_path
 from utility.serial_ports import serial_ports
 import Queue
 from PyQt4.QtTest import QTest
-from utility.new_masscode import MassCode
+from utility import masscode_v1, masscode_v2
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -85,6 +85,7 @@ class ManualBalanceUI(QtGui.QWidget):
 
         # Disable the connect button until the stabilization time has been chosen
         self.ui.connectButton.setEnabled(0)
+        self.ui.workdownCheck.setEnabled(0)
 
         # Disable the continue button until a connection is established
         self.ui.continueButton.setEnabled(0)
@@ -126,7 +127,7 @@ class ManualBalanceUI(QtGui.QWidget):
         keys = ["run " + str(i+1).zfill(2) for i in range(self.run)]
         self.data_dict = dict.fromkeys(keys)
         for key in self.data_dict.keys():
-            self.data_dict[key] = dict.fromkeys(['observation ' + str(i).zfill(2) for i in range((len(self.main_dict['design matrix'])))])
+            self.data_dict[key] = dict.fromkeys(['observation ' + str(i+1).zfill(2) for i in range((len(self.main_dict['design matrix'])))])
             for key2 in self.data_dict[key].keys():
                 self.data_dict[key][key2] = dict.fromkeys(['1-A1', '2-B1', '3-B2', '4-A2'])
 
@@ -201,7 +202,8 @@ class ManualBalanceUI(QtGui.QWidget):
             # print 'END OF MASS INFO'
             # pretty(self.data_dict)
 
-            output = MassCode(self.massInfo, self.data_dict)
+            # output = masscode_v1.MassCode(self.massInfo, self.data_dict)
+            output = masscode_v2.MassCode(self.massInfo, self.data_dict)
 
             runs = sorted(self.data_dict.keys())
             input_file = generate_input_file(self.input_file_path,
@@ -437,19 +439,19 @@ class ManualBalanceUI(QtGui.QWidget):
         self.humid = self.db.latest_hygrometer_data(self.main_dict['hygrometer id'])[0]
 
         if self.step == 2:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['A1'] \
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['1-A1'] \
                 = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 4:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['B1'] \
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['2-B1'] \
                 = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 6:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['B2'] \
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['3-B2'] \
                 = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
         elif self.step == 8:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['A2'] \
+            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter).zfill(2)]['4-A2'] \
                 = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
     def workdown_check(self):
@@ -493,6 +495,7 @@ class ManualBalanceUI(QtGui.QWidget):
         quit_msg = "Are you sure you want to quit?"
         reply = QtGui.QMessageBox.question(self, 'Message:', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
+            QApplication.restoreOverrideCursor()
             self.window.close()
         else:
             pass

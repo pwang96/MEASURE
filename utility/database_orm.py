@@ -648,3 +648,21 @@ class DatabaseORM:
             order_by(self.external_weight_data.c.date). \
             where(self.external_weight_data.c.name == name)
         return self.engine.execute(sql)
+
+    def get_external_weight_info(self, name):
+        sql = select([self.weights_external.c.units, self.weights_external.c.nominal,
+                      self.weights_external.c.customer_name, self.weights_external.c.density,
+                      self.weights_external.c.volumetric_exp, self.weights_external.c.density_uncert]). \
+            where(self.weights_external.c.weight_name == name)
+        return self.engine.execute(sql)
+
+    def update_external_weight_info(self, name, nominal, units, customer, density, vol_exp, den_unc):
+        table = self.weights_external.update()
+        self.engine.execute((table.values(weight_name=name,
+                                          units=units,
+                                          nominal=nominal,
+                                          customer_name=customer,
+                                          density=density,
+                                          density_uncert=den_unc,
+                                          volumetric_exp=vol_exp)).
+                            where(self.weights_external.c.weight_name == name))

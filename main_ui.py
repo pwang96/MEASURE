@@ -4,11 +4,12 @@ import sys
 import re
 import os
 import json
+import subprocess
 from threading import Thread
 from Queue import Queue
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import QObject, pyqtSignal
-from utility.run_masscode_queue import run_masscode_queue
+from utility.run_masscode_queue import run_old_masscode
 from utility.show_dictionary import pretty
 from config import base_path, output_path
 from config import software_name
@@ -28,8 +29,11 @@ from sub_ui.manual_balance_ui import ManualBalanceUI
 from sub_ui.edit_stations_ui import EditStationUI
 from sub_ui.add_station_ui import AddStationUI
 from sub_ui.custom_design_matrix import CustomDesignUI
+from sub_ui.edit_existing_weight_ui import EditExistingWeightUI
 from sqlalchemy.exc import OperationalError
 from utility.parse_send import parse_output, send_output
+from utility.ntxt_to_MassCode2 import convert_masscode
+from file_generators.generate_output_file import generate_output_file
 # ------------------------------------------------------------------------------------------------------
 
 
@@ -122,6 +126,7 @@ class MainUI(QObject):
                                                 # weight list in the manual balance tab
 
         self.input_file_queue = Queue()
+        self.json_file_queue = Queue()
 
         # Temporary testing config
         self.ui.balNameCombo.setCurrentIndex(0)
@@ -145,10 +150,15 @@ class MainUI(QObject):
         self.ui.configBalButton.clicked.connect(self.click_config_bal)  # Automatic Balance
 
         self.ui.masscodeButton.clicked.connect(self.click_masscode)  # Masscode Tab
+        self.ui.oldMasscodeButton.clicked.connect(self.click_old_masscode)
         self.ui.inputButton.clicked.connect(self.click_input)
+        self.ui.massCodeRemoveButton.clicked.connect(self.click_masscode_remove)
 # -------------------------------------------------------------------------------------------------------------------------
+        self.ui.selectFilesButton.clicked.connect(self.click_select_files)  # Beautify JSON Tab
+        self.ui.beautifyButton.clicked.connect(self.beautify_json)
+        self.ui.beautifyRemoveButton.clicked.connect(self.click_beautify_remove)
 
-        self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Browsing Output files
+        self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Plot Tab, Browsing Output files
         self.ui.extractButton.clicked.connect(self.extract_data)
         self.ui.outputList.itemActivated.connect(self.extract_data)
         self.ui.sendButton.clicked.connect(self.send_data)
@@ -169,6 +179,7 @@ class MainUI(QObject):
         self.ui.editStationButton.clicked.connect(self.click_edit_stations)
         self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
         self.ui.editMachinesButton.clicked.connect(self.click_edit_machines)
+        self.ui.editExistingWeightButton.clicked.connect(self.click_edit_existing_weight)
 
 # -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
@@ -197,8 +208,32 @@ class MainUI(QObject):
         """ Opens a browser to look for files to parse and graph"""
         file_dialog = QtGui.QFileDialog()
         file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot",
-                                                        output_path, "Output files (*.json *.nout)")
+                                                        output_path, "Output files (*.json *.nout *.txt)")
         self.ui.outputList.addItems(file_names)
+
+    def click_select_files(self):
+        """ Opens a browser to look for json files to create output files from"""
+        file_dialog = QtGui.QFileDialog()
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select json files to beautify",
+                                                        output_path, "Output files (*.json)")
+        self.ui.jsonList.addItems(file_names)
+
+    def click_beautify_remove(self):
+        for item in self.ui.jsonList.selectedItems():
+            self.ui.jsonList.takeItem(self.ui.jsonList.row(item))
+
+    def beautify_json(self):
+        """ Push input files in ui.inputList through the masscode (multi-threaded) """
+        self.ui.statusBrowser.clear()
+        for n in range(self.ui.jsonList.count()):
+            self.json_file_queue.put(str(self.ui.jsonList.item(n).text()))
+
+        for n in range(self.ui.jsonList.count()):
+            beautify_t = Thread(target=generate_output_file, args=(self.json_file_queue.get(),))
+            beautify_t.start()
+        self.ui.jsonList.clear()
+        self.ui.statusBrowser.append("Task complete!")
+        self.ui.inputList.clear()
 
     def checked_control_chart(self):
         """Populates the list of weights whose history can be graphed"""
@@ -272,6 +307,10 @@ class MainUI(QObject):
         # Brings up the UI to edit an environmental machine
         EditMetersUI(self)
 
+    def click_edit_existing_weight(self):
+        # Brings up the UI to edit an existing weight
+        EditExistingWeightUI(self)
+
     def click_configure_manual(self):
         # Brings up the UI to conduct a calibration with a manual balance
         try:
@@ -324,7 +363,7 @@ class MainUI(QObject):
         self.ui.outputList.clear()
         try:
             self.massplot = FileMassPlot(self.db, r, c, u1, u2)
-            self.ui.plotArea.adSubWindow(self.massplot).setWindowTitle("Mass control charts")
+            self.ui.plotArea.addSubWindow(self.massplot).setWindowTitle("Mass control charts")
             self.massplot.show()
         except UnboundLocalError:
             pass
@@ -432,10 +471,29 @@ class MainUI(QObject):
         for n in range(self.ui.inputList.count()):
             self.input_file_queue.put(str(self.ui.inputList.item(n).text()))
 
-        masscode_t = Thread(target=run_masscode_queue, args=(self,))
-        masscode_t.start()
+        for n in range(self.ui.inputList.count()):
+
+            masscode_t = Thread(target=convert_masscode, args=(self.input_file_queue.get(),))
+            masscode_t.start()
         self.ui.statusBrowser.append("Task complete!")
         self.ui.inputList.clear()
+
+    def click_old_masscode(self):
+        for n in range(self.ui.inputList.count()):
+            input_path = str(self.ui.inputList.item(n).text())
+
+            output_path = input_path.replace('.ntxt', '.nout')
+            print input_path, '\n', output_path
+            try:
+                run_old_masscode(input_path, output_path)
+            except:
+                ErrorMessage("Something Happened")
+
+        self.ui.statusBrowser.append("Task Complete!")
+        self.ui.inputList.clear()
+    def click_masscode_remove(self):
+        for item in self.ui.inputList.selectedItems():
+            self.ui.inputList.takeItem(self.ui.inputList.row(item))
 
     @staticmethod
     def exit_function():

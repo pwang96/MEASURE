@@ -20,7 +20,7 @@ from config import base_path
 from utility.serial_ports import serial_ports
 from populate_dictionary.populate_masscode_dict import populate_massInfo
 from populate_dictionary.masscode_dicts import massInfo
-from utility.new_masscode import MassCode
+from utility import masscode_v1, masscode_v2
 from file_generators.generate_json_file import generate_json_file
 
 
@@ -151,33 +151,39 @@ class ComparatorUi(QObject):
         for key2 in sorted(self.data_dict[runs[self.run]].keys()):
             for key3 in sorted(self.data_dict[runs[self.run]][key2].keys()):
                 if not self.data_dict[runs[self.run]][key2][key3]:
-                    self.data_dict[runs[self.run]][key2][key3] = ([str(arg), temp, press, humid])
+                    self.data_dict[runs[self.run]][key2][key3] = ([str(1000*float(arg)), temp, press, humid])
                     pretty(self.data_dict, indent=1)
                     if self.is_end_of_run():
-                        run_number = int(re.findall(r'[\d]+', runs[self.run])[0])
+                        # run_number = int(re.findall(r'[\d]+', runs[self.run])[0])
+                        run_number = self.run + 1
                         
                         # TEMPORARY CODE, saves main dictionary for debugging purposes
                         # ---------------------------------------------------------
                         with open('%s/data_dict_%s.json' % (base_path, str(run_number)), 'w+') as fp:
                             json.dump(self.data_dict, fp)
                         # ---------------------------------------------------------
-
-
-                        # RUN THE NEW MASSCODE
-                        # Populate the massInfo dictionary based on the main_dict
-                        self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
-
-                        output = MassCode(self.massInfo, self.data_dict)
-
-                        json_file_path = generate_json_file(self.input_file_path, self.main_dict, self.data_dict,
-                                                            output)
-                        print json_file_path
-
+                        # Create the .ntxt file
                         input_file = generate_input_file(self.input_file_path,
                                                          self.main_dict,
                                                          self.data_dict[runs[self.run]],
                                                          run_number,
                                                          len(self.data_dict.keys()))
+
+                        # RUN THE NEW MASSCODE
+                        # Populate the massInfo dictionary based on the main_dict
+                        self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
+
+                        # dictionary with only the latest run data
+                        specific_data_dict = {runs[self.run]: self.data_dict[runs[self.run]]}
+
+                        # output becomes MassCode object
+                        output = masscode_v2.MassCode(self.massInfo, specific_data_dict)
+
+                        json_file_path = generate_json_file(self.input_file_path, self.main_dict, specific_data_dict,
+                                                            output, run_number)
+                        print json_file_path
+
+                        # Create the output file
                         output_file = input_file[:].replace('.ntxt', '.nout')
                         print input_file
                         print output_file
@@ -284,7 +290,7 @@ class ComparatorUi(QObject):
         """ Prompt user for desired path """
         file_dialog = QtGui.QFileDialog()
         self.input_file_path = QtGui.QFileDialog.getSaveFileName(file_dialog, 'Save as...',
-                                                                 base_path + "\\" + datetime.date.today().strftime("%Y%m%d")).replace('/', '\\')
+                                    base_path + "\\" + datetime.date.today().strftime("%Y%m%d")).replace('/', '\\')
 
     def click_start(self):
         """ Run the list of methods generated in "RecipeMaker" in a new thread.
@@ -300,13 +306,6 @@ class ComparatorUi(QObject):
             return
 
         self.get_file_path()
-
-        # TODO: implement settings loading functionality using .json files generated here
-        # save dictionaries in JSON format
-        # with open(self.input_file_path + '_main.json', 'w+') as fp_1:
-        #     json.dump(self.main_dict, fp_1)
-        # with open(self.input_file_path + '_settings.json', 'w+') as fp_2:
-        #     json.dump(self.settings_dict, fp_2)
 
         # Use recipe maker to generate list of methods and method arguments
         rm = RecipeMaker(self.status_signal,
@@ -356,6 +355,7 @@ class ComparatorUi(QObject):
                         = data['corrections'][index_of_new_restraint]  # next restraint becomes current restraint
                     self.massInfo['error'] \
                         = [data['type A'][index_of_new_restraint], data['type B'][index_of_new_restraint]]
+                    self.main_dict['restraint uncert'] = self.massInfo['error']
                 print self.massInfo['acceptcorrect'], '\n', self.massInfo['error']
             except IndexError:
                 pass

@@ -1,27 +1,15 @@
 __author__ = 'masslab'
 
 import subprocess
-from nist_config import nist_masscode_path
+
+path_to_masscode = r"L:\internal\684.07\Mass_Project\Software\Calibration Processor\20160412\masscomp_absoft_2016_04_11.exe"
 
 
-def run_masscode_queue(cls):
-    # Run until queue is empty
-    while not cls.input_file_queue.empty():
+def run_old_masscode(input_path, output_path):
 
-        input_file = cls.input_file_queue.get()
+    subprocess.call([path_to_masscode, input_path, output_path])
 
-        output_file = input_file[:-3] + "out"
 
-        # Runs the masscode
-        print('"' + nist_masscode_path + '"' + "\n" + '"' + input_file + '"' + "\n" + '"' + output_file + '"' + "\n")
-
-        #subprocess.call('"' + nist_masscode_path + '"' + "\n" + '"' + input_file + '"' + "\n" + '"' + output_file + '"' + "\n")
-        proc = subprocess.Popen(nist_masscode_path, stdin=subprocess.PIPE)
-        proc.communicate(input_file + '\n' + output_file + '\n')
-        cls.input_file_queue.task_done()
-
-        # Removes the input file path from the list
-        try:
-            cls.inputList.takeItem(0)
-        except:
-            pass
+# input_path = r"L:\internal\684.07\Mass_Project\Software\PythonProjects\measure\testing\peter\runMasscode\lbseries4_2.ntxt"
+# output_path = r"L:\internal\684.07\Mass_Project\Software\PythonProjects\measure\testing\peter\runMasscode\lbseries4_2.nout"
+# run_old_masscode(input_path, output_path)

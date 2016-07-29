@@ -54,6 +54,7 @@ AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'sink': [['SINK\r\n'], ['Sinking handler', 'Sink complete', 'Error: failed to sink handler']],
           'lift': [['LIFT\r\n'], ['Lifting handler', 'Lift complete', 'Error: failed to lift handler']],
           'beep': [['DB 1\r\n'], ['Beeping', 'Beep complete', 'Error: failed to beep']],
+          'set unit': [['M21 0 3\r\n'], ['Setting unit to mg', 'Set to mg', 'Error']],
           'identify':   [['ID\r\n'], ['Identifying comparator', 'Id response:\n%s', 'Error: No balance response']],
           'resolution': [['RG F\r\n', 'RG C\r\n'], ['Setting balance resolution', 'Resolution set', 'Error: failed to set resolution%s']],
           'handshake on': [['HANDSHAKE_ON\r\n'], ['Turning handshake on', 'Handshake on', 'Error: failed to turn handshake on']],

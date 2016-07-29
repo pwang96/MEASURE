@@ -161,6 +161,9 @@
        <property name="text">
         <string>Workdown</string>
        </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>

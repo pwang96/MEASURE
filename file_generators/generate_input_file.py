@@ -60,8 +60,8 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
         if len(main_dict['restraint uncert']) == 1:
             input_file.write("TYPE B UNCERTAINTY\t%s\n" % main_dict['restraint uncert'])
         else:
-            input_file.write("TYPE A, B UNCERTAINTIES\t%s, %s\n" % (main_dict['restraint uncert'][0],
-                                                                    main_dict['restraint uncert'][1]))
+            input_file.write("TYPE B UNCERTAINTY\t%s\n" % (main_dict['restraint uncert'][1]))
+            input_file.write("TYPE A UNCERTAINTY\t%s\n" % (main_dict['restraint uncert'][0]))
         # input_file.write("RESTRAINT IDENTIFICATION\t%s\n" %cls.settings_dict["RESTRAINT IDENTIFICATION"])
         input_file.write("\n")
         input_file.write("BALANCE CODE\t%s\n" % main_dict['balance id'])
