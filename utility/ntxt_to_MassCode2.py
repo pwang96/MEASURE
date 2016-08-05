@@ -309,9 +309,13 @@ def convert_masscode(dirname):
     generate_abridged_json_file(json_path, a)
 
     # Combine original and abridged into one file
-    with open(dirname.replace('.ntxt', '.json')) as f1:
-        # original json file
-        original_info = json.load(f1)
+    try:
+        with open(dirname.replace('.ntxt', '.json')) as f1:
+            # original json file
+            original_info = json.load(f1)
+    except IOError:
+        with open(dirname.replace('.txt', '.json')) as f1:
+            original_info = json.load(f1)
 
     with open(json_path + '_abridged.json') as f2:
         # abridged json file

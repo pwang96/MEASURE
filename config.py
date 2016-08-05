@@ -1,6 +1,7 @@
 __author__ = 'masslab'
 
 from nist_config import *
+import os
 
 # Name and software version
 software_name = "MEASURE 0.2"
@@ -16,6 +17,9 @@ masscode_path = nist_masscode_path
 
 # This identifies the path of output files
 output_path = r'L:\internal\684.07\Mass_Project\Customers\Calibration Reports'
+
+# This identifies the location of the package folder MEASURE
+package_path = os.path.abspath(os.path.dirname(__file__))
 
 # This identifies the base path the program will use to when prompting the
 # user for input file directory
@@ -65,8 +69,9 @@ AX1006 = {'move': [['MOVE 1\r\n', 'MOVE 2\r\n', 'MOVE 3\r\n', 'MOVE 4\r\n'], ['M
           'wait time': 'Executing wait time:\n%s left',
           'id': 69}
 
-AX_MX_UMX = {'identify': [['I10\r\n'], ['I10 A %s']],
-             'read': [['SU\r\n'], ['S S %s ']],
+AX_MX_UMX = {'identify': [['I10\r\n'], ['Identified: %s']],
+             'inquiry': [['I11\r\n'], ['Model: %s']],
+             'read': [['S\r\n'], ['S S %s ']],
              'id': 70}
 
 AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
@@ -78,10 +83,22 @@ AT_MT_UMT = {'identify': [['ID\r\n'], ['%s']],
              'stab time':  'Stabilizing: %s s',
              'id': 99}
 
+Sartorius = {'identify': [['I10\r\n'], ['Identified: %s']],
+             'read': [['S\r\n'], ['Got measurement: %s Press continue.']],
+             'calibrate': [['C1\r\n'], ['%s']],
+             'zero': [['Z\r\n'], ['%s']]}
 
 # -----------------------------------------------------------------------------------
 # This dictionary matches the balance to the set of commands it takes in
 
-comparator_matching = {68: AT106H, 69: AX1006, 70: AX_MX_UMX, 71: AX_MX_UMX, 72: AX_MX_UMX, 99: AT_MT_UMT, 41: AT_MT_UMT}
+comparator_matching = {66: AX_MX_UMX,
+                       68: AT106H,
+                       69: AX1006,
+                       70: AX_MX_UMX,
+                       71: AX_MX_UMX,
+                       72: AX_MX_UMX,
+                       99: AT_MT_UMT,
+                       41: AT_MT_UMT,
+                       80: Sartorius}
 
 

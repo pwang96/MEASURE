@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>939</width>
+    <width>948</width>
     <height>958</height>
    </rect>
   </property>
@@ -57,7 +57,7 @@ p, li { white-space: pre-wrap; }
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="Calibration">
        <attribute name="title">
         <string>Calibration</string>
        </attribute>
@@ -97,6 +97,13 @@ p, li { white-space: pre-wrap; }
             <widget class="QPushButton" name="configManBalButton">
              <property name="text">
               <string>Configure Manual balance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="manualButton">
+             <property name="text">
+              <string>Manually Enter Measurements</string>
              </property>
             </widget>
            </item>
@@ -301,7 +308,7 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="Masscode">
        <attribute name="title">
         <string>Masscode</string>
        </attribute>
@@ -391,74 +398,71 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_4">
+      <widget class="QWidget" name="BeautifyJson">
+       <property name="minimumSize">
+        <size>
+         <width>924</width>
+         <height>0</height>
+        </size>
+       </property>
        <attribute name="title">
         <string>Beautify JSON</string>
        </attribute>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>901</width>
-          <height>691</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Select json files to beautify </string>
-        </property>
-        <widget class="QPushButton" name="selectFilesButton">
-         <property name="geometry">
-          <rect>
-           <x>320</x>
-           <y>30</y>
-           <width>281</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Select Files</string>
-         </property>
-        </widget>
-        <widget class="QListWidget" name="jsonList">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>70</y>
-           <width>771</width>
-           <height>561</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="beautifyButton">
-         <property name="geometry">
-          <rect>
-           <x>330</x>
-           <y>650</y>
-           <width>291</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Create Output Files</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="beautifyRemoveButton">
-         <property name="geometry">
-          <rect>
-           <x>800</x>
-           <y>370</y>
-           <width>91</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Remove Item</string>
-         </property>
-        </widget>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Choose JSON files to beautify</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="2" column="1">
+            <widget class="QPushButton" name="beautifyRemoveButton">
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" alignment="Qt::AlignHCenter">
+            <widget class="QPushButton" name="beautifyButton">
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Beautify!</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QListWidget" name="jsonList"/>
+           </item>
+           <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+            <widget class="QPushButton" name="selectFilesButton">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>200</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Select Files</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </widget>
-      <widget class="QWidget" name="tab_3">
+      <widget class="QWidget" name="Plot">
        <attribute name="title">
         <string>Plot</string>
        </attribute>
@@ -556,142 +560,138 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_5">
+      <widget class="QWidget" name="DBAccess">
        <attribute name="title">
         <string>DB Access</string>
        </attribute>
-       <widget class="QGroupBox" name="dbViewBox">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>400</y>
-          <width>921</width>
-          <height>61</height>
-         </rect>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Select the database to view</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMinimumSize</enum>
+          </property>
+          <item>
+           <widget class="QTableWidget" name="dbTable">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>500</height>
+             </size>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="dbViewBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>500</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Select the database to view</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <widget class="QRadioButton" name="stationRadio">
-             <property name="text">
-              <string>Stations</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="balanceRadio">
-             <property name="text">
-              <string>Balances</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="externalWeightRadio">
-             <property name="text">
-              <string>External Weights</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="thermometerRadio">
-             <property name="text">
-              <string>Thermometers</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="hygrometerRadio">
-             <property name="text">
-              <string>Hygrometers</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="barometerRadio">
-             <property name="text">
-              <string>Barometers</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QRadioButton" name="stationRadio">
+               <property name="text">
+                <string>Stations</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="balanceRadio">
+               <property name="text">
+                <string>Balances</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="externalWeightRadio">
+               <property name="text">
+                <string>External Weights</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="thermometerRadio">
+               <property name="text">
+                <string>Thermometers</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="hygrometerRadio">
+               <property name="text">
+                <string>Hygrometers</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="barometerRadio">
+               <property name="text">
+                <string>Barometers</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="horizontalLayoutWidget_2">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>465</y>
-          <width>901</width>
-          <height>73</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QPushButton" name="addStationButton">
-           <property name="text">
-            <string>Add Stations</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editStationButton">
-           <property name="text">
-            <string>Edit Stations</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editWeightButton">
-           <property name="text">
-            <string>Add Weights</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editExistingWeightButton">
-           <property name="text">
-            <string>Edit Existing Weight</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="editMachinesButton">
-           <property name="text">
-            <string>Edit Machines</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="verticalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>921</width>
-          <height>401</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetMinimumSize</enum>
-         </property>
-         <item>
-          <widget class="QTableWidget" name="dbTable"/>
-         </item>
-        </layout>
-       </widget>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="addStationButton">
+            <property name="text">
+             <string>Add Stations</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="editStationButton">
+            <property name="text">
+             <string>Edit Stations</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="editWeightButton">
+            <property name="text">
+             <string>Add Weights</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="editExistingWeightButton">
+            <property name="text">
+             <string>Edit Existing Weight</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="editMachinesButton">
+            <property name="text">
+             <string>Edit Machines</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

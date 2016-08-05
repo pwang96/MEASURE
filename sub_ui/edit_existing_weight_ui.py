@@ -98,6 +98,9 @@ class EditExistingWeightUI(QObject):
             self.ui.densityEdit.setText(str(weight_info[3]))
             self.ui.volExpEdit.setText(str(weight_info[4]))
             self.ui.densityUncEdit.setText(str(weight_info[5]))
+
+            # Don't allow users to change the name (won't work due to SQL updating)
+            self.ui.nameEdit.setEnabled(0)
         else:
             pass
 

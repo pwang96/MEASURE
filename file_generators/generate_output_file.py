@@ -2,11 +2,30 @@ __author__ = 'masslab'
 
 import json
 from config import software_name
-import re
+import numpy as np
 
 
 def generate_output_file(jsonpath):
     """
+    This function takes a json file (presumably the output of the masscode, and turns it into an output file
+    to make it easier to read.
+
+    The json file contains data that is calculated by the masscode and also data that is taken directly
+    from the database. Data in the database tends to be stored in the json dictionary as strings, while
+    the masscode output tends to output in floats (for the numbers)
+
+    The following keys to the json dictionary all have values with strings or list of strings outputs
+    when there should be floats.
+
+    'weight nominals'
+    'restraint uncert'
+    'weight densities'
+    'pressure uncert'
+    'temperature uncert'
+    'weight accepted values'
+    'weight exp coefficients'
+    'humidity uncert'
+    'check between'
 
     :param jsonpath: path to the json file with all the information outputted by the new masscode
     :return: path to the output file
@@ -16,32 +35,26 @@ def generate_output_file(jsonpath):
     with open(jsonpath) as f:
         info = json.load(f)
 
+    # print info
+
+    # in order to handle json files with other runs than 'run 01'
     first_key = 'run 01'
     for key in info.keys():
         if 'run' in key:
             first_key = key
 
-    filename = jsonpath.replace('.json', '_output.txt')
+    # Change the string lists into float lists where necessary
+    info['weight accepted values'] = [float(i) for i in info['weight accepted values']]
 
-    restraint_accepted = [y for x, y in zip(info['restraint vec'], info['weight accepted values']) if x == 1][0]
-    restraint_volume = [y for x, y in zip(info['restraint vec'], info['volumes']) if x == 1][0]
-    restraint_b = [y for x, y in zip(info['restraint vec'], info['type B']) if x == 1][0]
-    restraint_a = [y for x, y in zip(info['restraint vec'], info['type A']) if x == 1][0]
+    restraint_accepted = np.array(info['restraint vec']).dot(np.array(info['weight accepted values']))
+    restraint_volume = np.array(info['restraint vec']).dot(np.array(info['volumes']))
+    restraint_b = np.array(info['restraint vec']).dot(np.array(info['type B']))
+    restraint_a = np.array(info['restraint vec']).dot(np.array(info['type A']))
 
-    check_accepted = [y for x, y in zip(info['check vec'], info['weight accepted values']) if x == 1]
-    check_volume = [y for x, y in zip(info['check vec'], info['volumes']) if x == 1]
-    check_b = [y for x, y in zip(info['check vec'], info['type B']) if x == 1]
-    check_a = [y for x, y in zip(info['restraint vec'], info['type A']) if x == 1]
-    if check_accepted:
-        check_accepted = check_accepted[0]
-        check_volume = check_volume[0]
-        check_b = check_b[0]
-        check_a = check_a[0]
-    else:
-        check_accepted = 0
-        check_volume = 0
-        check_b = 0
-        check_a = 0
+    check_accepted = np.array(info['check vec']).dot(np.array(info['weight accepted values']))
+    check_volume = np.array(info['check vec']).dot(np.array(info['volumes']))
+    check_b = np.array(info['check vec']).dot(np.array(info['type B']))
+    check_a = np.array(info['check vec']).dot(np.array(info['type A']))
 
     standard_vec = [max(a, b) for a, b in zip(info['restraint vec'], info['check vec'])]
     report_vec = standard_vec
@@ -62,18 +75,19 @@ def generate_output_file(jsonpath):
             elif v == 0:
                 visual_design_matrix[row_num][n] = ' '
 
-    observed_check_correction = [y for x, y in zip(info['check vec'], info['corrections']) if all((x,y))][0]
+    observed_check_correction = np.array(info['check vec']).dot(np.array(info['corrections']))
 
     volumes = [info['volumes'][0], info['volumes'][1], info['volumes'][2], abs(info['volumes'][3])]
 
     standard_names = [y for x, y in zip(standard_vec, info['weight names']) if x == 1]
 
-    report_names = [y for x, y in zip(report_vec, info['weight names']) if x == 1]
-    report_corrections = [y for x, y in zip(report_vec, info['corrections']) if x == 1]
-    report_exp_unc = [y for x, y in zip(report_vec, info['expanded uncertainty']) if x == 1]
-    report_volumes = [y for x, y in zip(report_vec, volumes) if x == 1]
-    report_coeff_exp = [y for x, y in zip(report_vec, info['weight exp coefficients']) if x == 1]
+    report_names = [y for x, y in zip(report_vec, info['weight names']) if x != 0]
+    report_corrections = [y for x, y in zip(report_vec, info['corrections']) if x != 0]
+    report_exp_unc = [y for x, y in zip(report_vec, info['expanded uncertainty']) if x != 0]
+    report_volumes = [y for x, y in zip(report_vec, volumes) if x != 0]
+    report_coeff_exp = [y for x, y in zip(report_vec, info['weight exp coefficients']) if x != 0]
 
+    filename = jsonpath.replace('.json', '_output.txt')
     with open(filename, 'w+') as f:
         f.write('This file was generated by "%s"\n' % software_name)
         # f.write('Series %s of %s\n' % (run number, total runs))

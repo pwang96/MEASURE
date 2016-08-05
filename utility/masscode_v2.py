@@ -374,10 +374,10 @@ class MassCode:
         This method does a least squares estimate of the mass correction
 
         Steps:
-        1. Create augemented matrix Z
+        1. Create augmented matrix Z
             a. Start with X*X^-1 the configuration matrix
             b. Add the restraint vector to the right
-            c. Add X^-1*Y the configuration matrix inverse mutiplied by the corrected difference matrix
+            c. Add X^-1*Y the configuration matrix inverse multiplied by the corrected difference matrix
             d. Calculate the value of the restraint accepted correction
             e. Create a horizontal vector with the restraint position vector and [o,restraint correction value]
             f. Add this vector to the bottom of Z
@@ -653,7 +653,10 @@ class MassCode:
         self.density = self.density.tolist()
 
         self.corrected = self.corrected.flatten().tolist()
-        self.delta = self.delta.flatten().tolist()
+        try:
+            self.delta = self.delta.flatten().tolist()
+        except Exception:
+            self.delta = 0
 
         self.uncertainty = self.uncertainty.flatten().tolist()
         self.expuncertainty = self.expuncertainty.flatten().tolist()

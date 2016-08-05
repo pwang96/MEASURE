@@ -2,7 +2,6 @@ __author__ = 'masslab'
 
 import datetime
 import json
-import re
 from subprocess import call
 from threading import Thread
 from PyQt4 import QtGui, QtCore, uic
@@ -16,7 +15,7 @@ from control.recipe_execute import execute
 from control.ingredient_methods import id_command
 from config import comparator_matching, masscode_path
 from utility.show_dictionary import pretty
-from config import base_path
+from config import base_path, output_path
 from utility.serial_ports import serial_ports
 from populate_dictionary.populate_masscode_dict import populate_massInfo
 from populate_dictionary.masscode_dicts import massInfo
@@ -290,7 +289,7 @@ class ComparatorUi(QObject):
         """ Prompt user for desired path """
         file_dialog = QtGui.QFileDialog()
         self.input_file_path = QtGui.QFileDialog.getSaveFileName(file_dialog, 'Save as...',
-                                    base_path + "\\" + datetime.date.today().strftime("%Y%m%d")).replace('/', '\\')
+                                    output_path + "\\" + datetime.date.today().strftime("%Y%m%d")).replace('/', '\\')
 
     def click_start(self):
         """ Run the list of methods generated in "RecipeMaker" in a new thread.
@@ -343,7 +342,7 @@ class ComparatorUi(QObject):
         if self.ui.workdownCheck.isChecked():
             self.workdown = True
             file_dialog = QtGui.QFileDialog()
-            file_name = QtGui.QFileDialog.getOpenFileName(file_dialog, "Select the PREVIOUS output file", base_path,
+            file_name = QtGui.QFileDialog.getOpenFileName(file_dialog, "Select the PREVIOUS output file", output_path,
                                                           "*.json")
             try:
                 with open(str(file_name[0])) as f:
@@ -365,7 +364,7 @@ class ComparatorUi(QObject):
 
     def click_exit(self):
         quit_msg = "Are you sure you want to exit?"
-        reply = QtGui.QMessageBox.question(self, 'Message:', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        reply = QtGui.QMessageBox.question(self.ui, 'Message:', quit_msg, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.__exit__()
         else:

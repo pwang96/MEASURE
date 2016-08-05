@@ -57,7 +57,7 @@ def generate_input_file(path, main_dict, data_dict, run_number, runs_total):
         input_file.write("\n")
         # input_file.write("DATE\t%s\n" % time.strftime("%m %d %Y"))
         input_file.write('%s UNITS\n' % main_dict['units'])
-        if len(main_dict['restraint uncert']) == 1:
+        if type(main_dict['restraint uncert']) != list:
             input_file.write("TYPE B UNCERTAINTY\t%s\n" % main_dict['restraint uncert'])
         else:
             input_file.write("TYPE B UNCERTAINTY\t%s\n" % (main_dict['restraint uncert'][1]))

@@ -137,8 +137,14 @@ def parse_output(filepath):
                         if 'Date Time' in line:
                             regex = r'(\d*/\d*/\d* \d*\:\d*)'
                             date_with_slash = re.findall(regex, line)[0]
-                            dct['date'] = datetime.datetime.strftime(
-                                datetime.datetime.strptime(date_with_slash, '%m/%d/%Y %H:%M'), '%m-%d-%Y %H:%M')
+                            if date_with_slash == '':
+                                regex2 = r'(\d*-\d*-\d* \d*\:\d*)'
+                                date_without_slash = re.findall(regex2, line)[0]
+                                dct['date'] = date_without_slash
+                            else:
+                                dct['date'] = datetime.datetime.strftime(
+                                    datetime.datetime.strptime(date_with_slash, '%m/%d/%Y %H:%M'), '%m-%d-%Y %H:%M')
+                            print dct['date']
 
                         if 'BALANCE' in line:
                             regex = r'(\d*)'

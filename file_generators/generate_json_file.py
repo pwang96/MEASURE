@@ -96,7 +96,7 @@ def generate_json_file(path, main_dict, data_dict, output, run=1):
                 'weight densities': densities,
                 'weight exp coefficients': exp_coeffs,
                 'weight accepted values': accepteds,
-                'date': datetime.datetime.strftime(datetime.datetime.now(), "%m/%d/%Y %H:%M")}
+                'date': datetime.datetime.strftime(datetime.datetime.now(), "%m-%d-%Y %H:%M")}
 
     all_info.update(data_dict)
 

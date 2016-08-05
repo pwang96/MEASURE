@@ -11,7 +11,7 @@ from PyQt4 import QtGui, uic
 from PyQt4.QtCore import QObject, pyqtSignal
 from utility.run_masscode_queue import run_old_masscode
 from utility.show_dictionary import pretty
-from config import base_path, output_path
+from config import base_path, output_path, package_path
 from config import software_name
 from sub_ui.comparator_ui import ComparatorUi
 from sub_ui.error_message import ErrorMessage
@@ -30,6 +30,7 @@ from sub_ui.edit_stations_ui import EditStationUI
 from sub_ui.add_station_ui import AddStationUI
 from sub_ui.custom_design_matrix import CustomDesignUI
 from sub_ui.edit_existing_weight_ui import EditExistingWeightUI
+from sub_ui.manual_ui import ManualUI
 from sqlalchemy.exc import OperationalError
 from utility.parse_send import parse_output, send_output
 from utility.ntxt_to_MassCode2 import convert_masscode
@@ -147,6 +148,7 @@ class MainUI(QObject):
         self.ui.balNameCombo.activated.connect(self.activate_balance)  # Calibration Tab
         self.ui.designCombo.activated.connect(self.activate_design)
         self.ui.configManBalButton.clicked.connect(self.click_configure_manual)  # Manual Balance
+        self.ui.manualButton.clicked.connect(self.click_manual)  # manually enter the readings
         self.ui.configBalButton.clicked.connect(self.click_config_bal)  # Automatic Balance
 
         self.ui.masscodeButton.clicked.connect(self.click_masscode)  # Masscode Tab
@@ -323,6 +325,17 @@ class MainUI(QObject):
         except IndexError:
             ErrorMessage('Please fill in all the weights!')
 
+    def click_manual(self):
+        # Brings up the manual UI. This UI allows users to manually enter the readings
+        # while automatically getting the environmental readings
+        try:
+            populate_dictionary(self)
+            pretty(self.main_dict)
+            ManualUI(self)
+
+        except IndexError:
+            ErrorMessage("Please fill in all the weights!")
+
     def extract_data(self):
         # gets the environmental and mass data from an output file and graphs it
         try:
@@ -460,7 +473,8 @@ class MainUI(QObject):
     def click_input(self):
         """ Prompt user to select input files to be added to the input file list """
         file_dialog = QtGui.QFileDialog()
-        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode input files", base_path, "*.ntxt")
+        file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog,
+                                                        "Select masscode input files", output_path, "(*.ntxt *.txt)")
         self.ui.inputList.addItems(file_names)
         self.ui.masscodeButton.setEnabled(True)
 
