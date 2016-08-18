@@ -165,6 +165,15 @@ class DatabaseORM:
             where(self.weights_internal_history.c.weight_id == weight_id).\
             order_by(self.weights_internal_history.c.id)
         return self.engine.execute(sql).fetchall()[-1]
+        
+    def external_addon_weight_data(self, addon_id):
+        sql = select([self.weights_external.c.id,
+                      self.weights_external.c.volumetric_exp,
+                      self.weights_external.c.nominal,
+                      self.weights_external.c.density]).\
+            where(self.weights_external.c.id == addon_id).\
+            order_by(self.weights_external.c.id)
+        return self.engine.execute(sql).fetchall()[-1]
 
     def addon_weight_data(self, addon_id):
         """ Return metadata of "add on" weights from 'weight_internal_history' table.

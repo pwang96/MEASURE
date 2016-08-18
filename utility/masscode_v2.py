@@ -80,22 +80,22 @@ class MassCode:
 
             for y in sorted(rawData.keys()):  # runs the loop through all the comparisons
                 observations = rawData[y]
-                differ.append(float(observations['1-A1'][0]
-                                    + observations['4-A2'][0]
-                                    - observations['2-B1'][0]
-                                    - observations['3-B2'][0]) / 2
+                differ.append((float(observations['1-A1'][0])
+                                    + float(observations['4-A2'][0])
+                                    - float(observations['2-B1'][0])
+                                    - float(observations['3-B2'][0])) / 2
                               )
 
-                sensi.append(float(observations['1-A1'][0]
-                                   - 3 * observations['2-B1'][0]
-                                   + 3 * observations['3-B2'][0]
-                                   - observations['4-A2'][0]) / 2
+                sensi.append((float(observations['1-A1'][0])
+                                   - 3 * float(observations['2-B1'][0])
+                                   + 3 * float(observations['3-B2'][0])
+                                   - float(observations['4-A2'][0])) / 2
                              )
 
-                drift.append(float(observations['2-B1'][0]
-                                   - observations['1-A1'][0]
-                                   + observations['4-A2'][0]
-                                   - observations['3-B2'][0]) / 2
+                drift.append((float(observations['2-B1'][0])
+                                   - float(observations['1-A1'][0])
+                                   + float(observations['4-A2'][0])
+                                   - float(observations['3-B2'][0])) / 2
                              )
 
         self.difference = np.atleast_2d(differ).T  # takes the list, converts to array, makes it 2d and transposes it

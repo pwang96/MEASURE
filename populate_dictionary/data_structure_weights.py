@@ -31,8 +31,8 @@ def data_structure_weights(cls):
             cls.main_dict['weight info'][i] = ['{:<16}'.format(weight_name) + '{:>10}'.format(nominal) +
                                                '{:>10}'.format(density) + '{:>10}'.format(coeff_exp) +
                                                '{:>12}'.format(accepted)]
-            cls.main_dict['weight type b'][i] = None
-            cls.main_dict['weight between'][i] = None
+            cls.main_dict['weight type b'][i] = 0
+            cls.main_dict['weight between'][i] = 0
             cls.main_dict['weight density uncert'][i] = str(format(result[3], ".6f"))
 
         # Internal weights

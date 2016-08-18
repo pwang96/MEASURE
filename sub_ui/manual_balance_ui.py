@@ -74,11 +74,13 @@ class ManualBalanceUI(QtGui.QWidget):
 
         # Populate the weights/positions table
         self.populate_reminder_table(cls)
+        self.ui.weightReminder.horizontalHeader().setStretchLastSection(True)
 
         # Construct the recent history table
         self.ui.historyTable.setColumnCount(4)
         self.ui.historyTable.setHorizontalHeaderLabels(["Measurement", "Temp", "Pressure", "Humidity"])
         self.ui.historyTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.ui.historyTable.horizontalHeader().setStretchLastSection(True)
 
         # Populate the port combo box with available COM ports
         self.ui.portCombo.addItems(serial_ports())
@@ -179,11 +181,18 @@ class ManualBalanceUI(QtGui.QWidget):
             self.stab_time = self.og_stab_time
 
     def proceed(self):
-        # This updates the status dialog box, and tells the user what to do next.
-        # It will also tell the user what is happening. The continue button will be
-        # disabled when the balance is taking a reading. When the balance finishes
-        # taking a reading, the button will enable, and the status bar will tell the user
-        # to click continue after completing the instructions.
+        """
+        This updates the status dialog box, and tells the user what to do next.
+        It will also tell the user what is happening. The continue button will be
+        disabled when the balance is taking a reading. When the balance finishes
+        taking a reading, the button will enable, and the status bar will tell the user
+        to click continue after completing the instructions.
+
+        There are steps 1-8 that describe each part of the process. The odd steps are
+        putting a weight onto the balance, and the even steps are querying the balance
+        The
+        :return: None
+        """
 
         # If the row counter is past the number of design matrix rows, save everything and quit
         if self.row_counter >= len(self.main_dict['design matrix']):
@@ -195,17 +204,7 @@ class ManualBalanceUI(QtGui.QWidget):
             self.isMeasure = False  # put variables to 0 so no if statements will run
             self.set = 0
 
-            # Populate the massInfo dictionary based on the main_dict
-            self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
-            # pretty(self.massInfo)
-            # print 'END OF MASS INFO'
-            # pretty(self.data_dict)
-
-            # output = masscode_v1.MassCode(self.massInfo, self.data_dict)
-            output = masscode_v2.MassCode(self.massInfo, self.data_dict)
-
-            # correctly populate the restraint uncertainty
-
+            # Correctly populate the restraint uncertainty
             runs = sorted(self.data_dict.keys())
             input_file = generate_input_file(self.input_file_path,
                                              self.main_dict,
@@ -214,6 +213,15 @@ class ManualBalanceUI(QtGui.QWidget):
                                              len(self.data_dict.keys()))
 
             output_file = input_file[:].replace('.ntxt', '.nout')
+
+            # Populate the massInfo dictionary based on the main_dict
+            self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
+            # pretty(self.massInfo)
+            # print 'END OF MASS INFO'
+            # pretty(self.data_dict)
+
+            # output = masscode_v1.MassCode(self.massInfo, self.data_dict)
+            output = masscode_v2.MassCode(self.massInfo, self.data_dict)
 
             # Create the json file
             json_file_path = generate_json_file(self.input_file_path, self.main_dict, self.data_dict, output)
@@ -277,7 +285,7 @@ class ManualBalanceUI(QtGui.QWidget):
                 t.start()
 
             except Exception:
-                print 'no motorized door'
+                print 'no motorized door. Press continue'
                 self.status_signal2.emit('Got reading: %s. Press Continue.' % self.readout)
 
             QTest.qWait(2000)  # wait 2 seconds to streamline process
@@ -330,7 +338,7 @@ class ManualBalanceUI(QtGui.QWidget):
         self.ui.statusBrowser.append(args)
 
         # Detect if a balance serial connection was made, arg will include "Id response"
-        if 'STD' in args or 'ES' in args:
+        if 'STD' in args or 'ES' in args or 'Id response:' in args:
             self.flags['connection'] = 1
             self.ui.statusBrowser.clear()
             self.ui.statusBrowser.append("Connected. Press continue")
@@ -440,21 +448,64 @@ class ManualBalanceUI(QtGui.QWidget):
         self.temp = self.db.latest_thermometer_data(self.main_dict['thermometer id'])[0]
         self.humid = self.db.latest_hygrometer_data(self.main_dict['hygrometer id'])[0]
 
-        if self.step == 2:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['1-A1'] \
-                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+        if int(self.main_dict['balance id']) == 53:  # UMT5 reads in micrograms, divide by 1000 to get mg
+            if self.step == 2:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '1-A1'] \
+                    = [float(self.readout)/1000, float(self.temp), float(self.press), float(self.humid)]
 
-        elif self.step == 4:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['2-B1'] \
-                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+            elif self.step == 4:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '2-B1'] \
+                    = [float(self.readout)/1000, float(self.temp), float(self.press), float(self.humid)]
 
-        elif self.step == 6:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['3-B2'] \
-                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+            elif self.step == 6:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '3-B2'] \
+                    = [float(self.readout)/1000, float(self.temp), float(self.press), float(self.humid)]
 
-        elif self.step == 8:
-            self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['4-A2'] \
-                = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+            elif self.step == 8:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '4-A2'] \
+                    = [float(self.readout)/1000, float(self.temp), float(self.press), float(self.humid)]
+
+        elif int(self.main_dict['balance id']) == 59:  # AT201 reads in g, multiply to get mg
+            if self.step == 2:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '1-A1'] \
+                    = [float(self.readout)*1000, float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 4:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '2-B1'] \
+                    = [float(self.readout)*1000, float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 6:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '3-B2'] \
+                    = [float(self.readout)*1000, float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 8:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter + 1).zfill(2)][
+                    '4-A2'] \
+                    = [float(self.readout)*1000, float(self.temp), float(self.press), float(self.humid)]
+
+        else:  # all other balances read in mg
+            if self.step == 2:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['1-A1'] \
+                    = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 4:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['2-B1'] \
+                    = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 6:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['3-B2'] \
+                    = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
+
+            elif self.step == 8:
+                self.data_dict['run ' + str(self.run).zfill(2)]['observation ' + str(self.row_counter+1).zfill(2)]['4-A2'] \
+                    = [float(self.readout), float(self.temp), float(self.press), float(self.humid)]
 
     def workdown_check(self):
         if self.ui.workdownCheck.isChecked():
@@ -504,4 +555,5 @@ class ManualBalanceUI(QtGui.QWidget):
             pass
 
     def __exit__(self):
+        QApplication.restoreOverrideCursor()
         self.window.close()

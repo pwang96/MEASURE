@@ -4,7 +4,6 @@ import sys
 import re
 import os
 import json
-import subprocess
 from threading import Thread
 from Queue import Queue
 from PyQt4 import QtGui, uic
@@ -31,6 +30,7 @@ from sub_ui.add_station_ui import AddStationUI
 from sub_ui.custom_design_matrix import CustomDesignUI
 from sub_ui.edit_existing_weight_ui import EditExistingWeightUI
 from sub_ui.manual_ui import ManualUI
+from sub_ui.air_density_calc_ui import AirDensityCalc
 from sqlalchemy.exc import OperationalError
 from utility.parse_send import parse_output, send_output
 from utility.ntxt_to_MassCode2 import convert_masscode
@@ -113,6 +113,7 @@ class MainUI(QObject):
         super(QObject, self).__init__()
         window.setWindowIcon(QtGui.QIcon('Masses.png'))
         window.setWindowTitle(software_name)
+        
         self.ui = uic.loadUi(r'L:\internal\684.07\Mass_Project\Software\PythonProjects\measure\main.ui', window)
 
         self.quit_signal.connect(self.quit_slot)
@@ -145,33 +146,37 @@ class MainUI(QObject):
 
     def callback_connector(self):
         """ Activate event detection"""
-        self.ui.balNameCombo.activated.connect(self.activate_balance)  # Calibration Tab
+        # CALIBRATION TAB
+        self.ui.balNameCombo.activated.connect(self.activate_balance)
         self.ui.designCombo.activated.connect(self.activate_design)
+        self.ui.removeButton.clicked.connect(self.remove_item)
+        self.ui.configBalButton.clicked.connect(self.click_config_bal)  # Automatic Balance
         self.ui.configManBalButton.clicked.connect(self.click_configure_manual)  # Manual Balance
         self.ui.manualButton.clicked.connect(self.click_manual)  # manually enter the readings
-        self.ui.configBalButton.clicked.connect(self.click_config_bal)  # Automatic Balance
 
-        self.ui.masscodeButton.clicked.connect(self.click_masscode)  # Masscode Tab
+        # MASS CODE TAB
+        self.ui.masscodeButton.clicked.connect(self.click_masscode)
         self.ui.oldMasscodeButton.clicked.connect(self.click_old_masscode)
         self.ui.inputButton.clicked.connect(self.click_input)
         self.ui.massCodeRemoveButton.clicked.connect(self.click_masscode_remove)
-# -------------------------------------------------------------------------------------------------------------------------
-        self.ui.selectFilesButton.clicked.connect(self.click_select_files)  # Beautify JSON Tab
+
+        # BEAUTIFY JSON TAB
+        self.ui.selectFilesButton.clicked.connect(self.click_select_files)
         self.ui.beautifyButton.clicked.connect(self.beautify_json)
         self.ui.beautifyRemoveButton.clicked.connect(self.click_beautify_remove)
 
+        # PLOT TAB
         self.ui.outputBrowseButton.clicked.connect(self.click_browse)  # Plot Tab, Browsing Output files
         self.ui.extractButton.clicked.connect(self.extract_data)
         self.ui.outputList.itemActivated.connect(self.extract_data)
         self.ui.sendButton.clicked.connect(self.send_data)
-
         self.ui.controlChartRadio.toggled.connect(self.checked_control_chart)  # Control Chart
         self.ui.weightList.itemActivated.connect(self.draw_control_chart)
-
         self.ui.chooseEnviroCombo.activated.connect(self.get_apparati)  # Environmentals
         self.ui.enviroList.itemActivated.connect(self.draw_environmentals)
 
-        self.ui.balanceRadio.toggled.connect(self.checked_balances)  # Database access
+        # DB ACCESS TAB
+        self.ui.balanceRadio.toggled.connect(self.checked_balances)
         self.ui.stationRadio.toggled.connect(self.checked_stations)
         self.ui.externalWeightRadio.toggled.connect(self.checked_external_weights)
         self.ui.thermometerRadio.toggled.connect(self.checked_thermometers)
@@ -182,6 +187,9 @@ class MainUI(QObject):
         self.ui.editWeightButton.clicked.connect(self.click_edit_weights)
         self.ui.editMachinesButton.clicked.connect(self.click_edit_machines)
         self.ui.editExistingWeightButton.clicked.connect(self.click_edit_existing_weight)
+
+        # MISC TAB
+        self.ui.airDensitySolverButton.clicked.connect(self.click_air_density_solver)
 
 # -------------------------------------------------------------------------------------------------------------------------
         app.aboutToQuit.connect(self.exit_function)
@@ -201,31 +209,50 @@ class MainUI(QObject):
         login = LoginUi(self.quit_signal)
         self.db = login.db
         self.main_dict['user id'] = login.ident
+        # If the login is cancelled, raise an error to properly quit
         if login.ident is None:
             raise RuntimeError('Login cancelled')
             app.quit()
 
 # -------------------------------------------------------------------------------------------------------------------------
+    def remove_item(self):
+        """ Slot for removeButton.clicked
+        Clears the selected item in the weight table (calibration tab)
+        :return: None
+        """
+        current_item = self.ui.weightTable.currentItem()
+        current_item.setText('')
+
     def click_browse(self):
-        """ Opens a browser to look for files to parse and graph"""
+        """ Slot for outputBrowseButton.clicked
+        Opens a browser to look for files to parse and graph (plot tab)
+        :return: None
+        """
         file_dialog = QtGui.QFileDialog()
         file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select masscode files to plot",
                                                         output_path, "Output files (*.json *.nout *.txt)")
         self.ui.outputList.addItems(file_names)
 
     def click_select_files(self):
-        """ Opens a browser to look for json files to create output files from"""
+        """
+        Opens a browser to look for json files to create output files from (beautify json tab)
+        :return: None
+        """
         file_dialog = QtGui.QFileDialog()
         file_names = QtGui.QFileDialog.getOpenFileNames(file_dialog, "Select json files to beautify",
                                                         output_path, "Output files (*.json)")
         self.ui.jsonList.addItems(file_names)
 
     def click_beautify_remove(self):
+        """
+        Removes the selected json files in the jsonList (beautify json tab)
+        :return: None
+        """
         for item in self.ui.jsonList.selectedItems():
             self.ui.jsonList.takeItem(self.ui.jsonList.row(item))
 
     def beautify_json(self):
-        """ Push input files in ui.inputList through the masscode (multi-threaded) """
+        """ Push input files in ui.jsonList through the masscode (multi-threaded) """
         self.ui.statusBrowser.clear()
         for n in range(self.ui.jsonList.count()):
             self.json_file_queue.put(str(self.ui.jsonList.item(n).text()))
@@ -262,7 +289,8 @@ class MainUI(QObject):
         """ Draws the environmental data, look in plots/Environmentals.py"""
         apparatus_name = self.ui.enviroList.currentItem().text()
         regex = r'(.*), serial: (\w*)'
-        apparatus_name, apparatus_serial = str(re.findall(regex, apparatus_name)[0][0]), str(re.findall(regex, apparatus_name)[0][1])
+        apparatus_name = str(re.findall(regex, apparatus_name)[0][0])
+        apparatus_serial = str(re.findall(regex, apparatus_name)[0][1])
         apparatus_id = self.main_dict['index'][str(apparatus_name)+' '+str(apparatus_serial)]
         environment_type = self.ui.chooseEnviroCombo.currentText()
         self.environmentals = Environmentals(self, environment_type, apparatus_name, apparatus_id, apparatus_serial)
@@ -318,6 +346,7 @@ class MainUI(QObject):
         try:
             # Populate the dictionary
             populate_dictionary(self)
+            pretty(self.main_dict)
 
             # Call the Manual Balance UI
             ManualBalanceUI(self)
@@ -329,8 +358,11 @@ class MainUI(QObject):
         # Brings up the manual UI. This UI allows users to manually enter the readings
         # while automatically getting the environmental readings
         try:
+            # Populate the main_dict
             populate_dictionary(self)
             pretty(self.main_dict)
+
+            # Display Manual UI
             ManualUI(self)
 
         except IndexError:
@@ -389,12 +421,6 @@ class MainUI(QObject):
             # Populate and show main dictionary
             populate_dictionary(self)
             pretty(self.main_dict)  # prints out the main dictionary
-
-            # TEMPORARY CODE, saves main dictionary for debugging purposes
-            # ---------------------------------------------------------
-            # with open('SubUIs/main_dict.json', 'w+') as fp:
-            #     json.dump(self.main_dict, fp)
-            # ---------------------------------------------------------
 
             # Initializes the balance ui class stored in the balance dict under the balance id in the main dict
             ComparatorUi(self.main_dict, self.db)
@@ -462,8 +488,7 @@ class MainUI(QObject):
                 self.main_dict['design matrix'].append([int(a) for a in row.split(' ')])
                 self.ui.statusBrowser.append(row)
         except ValueError:
-            array = array.replace(';', ' ;')
-            for row in array.split(' ; '):
+            for row in array.split('; '):
                 self.main_dict['design matrix'].append([int(a) for a in row.split(' ')])
                 self.ui.statusBrowser.append(row)
 
@@ -489,25 +514,36 @@ class MainUI(QObject):
 
             masscode_t = Thread(target=convert_masscode, args=(self.input_file_queue.get(),))
             masscode_t.start()
+
         self.ui.statusBrowser.append("Task complete!")
         self.ui.inputList.clear()
 
     def click_old_masscode(self):
+        """
+        Runs the files through the old Fortran masscode by using subprocess.call
+        :return: None
+        """
         for n in range(self.ui.inputList.count()):
             input_path = str(self.ui.inputList.item(n).text())
 
             output_path = input_path.replace('.ntxt', '.nout')
-            print input_path, '\n', output_path
+            print repr(input_path), '\n', repr(output_path)
             try:
                 run_old_masscode(input_path, output_path)
+                # Doesn't work through threading for some reason, see utility/run_old_masscode.py, which works
             except:
                 ErrorMessage("Something Happened")
 
         self.ui.statusBrowser.append("Task Complete!")
         self.ui.inputList.clear()
+
     def click_masscode_remove(self):
+        # Removes the selected items in the input list
         for item in self.ui.inputList.selectedItems():
             self.ui.inputList.takeItem(self.ui.inputList.row(item))
+
+    def click_air_density_solver(self):
+        AirDensityCalc()
 
     @staticmethod
     def exit_function():

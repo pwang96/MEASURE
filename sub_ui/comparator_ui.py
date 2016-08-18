@@ -150,7 +150,10 @@ class ComparatorUi(QObject):
         for key2 in sorted(self.data_dict[runs[self.run]].keys()):
             for key3 in sorted(self.data_dict[runs[self.run]][key2].keys()):
                 if not self.data_dict[runs[self.run]][key2][key3]:
-                    self.data_dict[runs[self.run]][key2][key3] = ([str(1000*float(arg)), temp, press, humid])
+                    if int(self.main_dict['balance id']) == 69:
+                        self.data_dict[runs[self.run]][key2][key3] = ([(1000*float(arg)), float(temp), float(press), float(humid)])
+                    else:
+                        self.data_dict[runs[self.run]][key2][key3] = ([float(arg), float(temp), float(press), float(humid)])
                     pretty(self.data_dict, indent=1)
                     if self.is_end_of_run():
                         # run_number = int(re.findall(r'[\d]+', runs[self.run])[0])
@@ -169,18 +172,22 @@ class ComparatorUi(QObject):
                                                          len(self.data_dict.keys()))
 
                         # RUN THE NEW MASSCODE
+                        # TO COMMENT OUT, ADD A # AND A SPACE
+                        # TO UNCOMMENT, REMOVE THE SPACE AND THE #
                         # Populate the massInfo dictionary based on the main_dict
-                        self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
+                        # self.massInfo = populate_massInfo(self.main_dict, self.massInfo, self.workdown)
 
                         # dictionary with only the latest run data
-                        specific_data_dict = {runs[self.run]: self.data_dict[runs[self.run]]}
+                        # specific_data_dict = {runs[self.run]: self.data_dict[runs[self.run]]}
 
                         # output becomes MassCode object
-                        output = masscode_v2.MassCode(self.massInfo, specific_data_dict)
+                        # output = masscode_v2.MassCode(self.massInfo, specific_data_dict)
 
-                        json_file_path = generate_json_file(self.input_file_path, self.main_dict, specific_data_dict,
-                                                            output, run_number)
-                        print json_file_path
+                        # json_file_path = generate_json_file(self.input_file_path, self.main_dict, specific_data_dict,
+                        #                                     output, run_number)
+                        # print json_file_path
+
+                        # END OF NEW MASSCODE
 
                         # Create the output file
                         output_file = input_file[:].replace('.ntxt', '.nout')
@@ -371,7 +378,6 @@ class ComparatorUi(QObject):
             pass
 
     def __exit__(self):
-        self.environment_timer.stop()
         self.window.close()
 
 

@@ -14,6 +14,9 @@ except AttributeError:
 def populate_table_widget(cls):
     role_options = ["Unkn", "Restraint", "Check"]
 
+    # set width of weights column
+    cls.ui.weightTable.setColumnWidth(0, 200)
+
     # Set table length
     m = len(cls.main_dict['design matrix'][0])
     cls.ui.weightTable.setRowCount(m)

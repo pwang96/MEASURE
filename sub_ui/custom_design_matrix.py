@@ -51,6 +51,11 @@ class CustomDesignUI(QObject):
         # sends the text to the database
         text = self.ui.designEdit.toPlainText()
         text = str(text).replace('\n', ' ')
+        if text.endswith(';'):
+            text = text[:-1]
+        elif text.endswith('; '):
+            text = text[:-2]
+
         self.db.add_custom_design(text)
 
         self.window.close()

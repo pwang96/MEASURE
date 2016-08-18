@@ -32,6 +32,7 @@ class RecipeMaker:
         self._wait()
         self._pre_runs()
         self._runs()
+        self._post_run()
 
     def _startup(self):
         # Startup
@@ -128,3 +129,7 @@ class RecipeMaker:
                 self._move_to(p1)
                 self._sink_stabilize(stab)
                 self._read_value()
+
+    def _post_run(self):
+        self.m.append(long_command)
+        self.a.append([self.ss, self.c, self.i_d['lift'][0][0], self.i_d['lift'][1]])

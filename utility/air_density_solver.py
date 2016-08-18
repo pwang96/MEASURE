@@ -35,16 +35,16 @@ def air_density_solver(temp, press, humid):
     C = 33.93711047
     D = -6.3431645 * 10**3  # K
     psv = exp(A*t**2 + B*t + C + D/t)  # Pa water vapor pressure at saturation (function of temp)
-    #print psv
+
     # Enhancement Factor Calculation
     alpha = 1.00062
     beta = 3.14 * 10**(-8)  # Pa^(-1)
     gamma = 5.6 * 10**(-7)  # K^(-2)
     f = alpha + beta*p + gamma*(temp)**2  # enhancement factor (temp is in C)
-    #print f
+
     # Mole fraction of water vapor
     xv = h*f*psv/p
-    #print xv
+
     # Compressibility Factor Calculation
     a0 = 1.58123 * 10**(-6)  # KPa^(-1)
     a1 = -2.9331 * 10**(-8)  # Pa^(-1)
@@ -56,6 +56,6 @@ def air_density_solver(temp, press, humid):
     d = 1.83 * 10**(-11)  # K^2 Pa^(-2)
     e = -0.765 * 10**(-8)  # K^2 Pa^(-2)
     Z = 1 - (p/t)*(a0 + a1*temp + a2*temp**2 + (b0+b1*temp)*xv + (c0 + c1*temp)*xv**2) + (p**2/t**2)*(d + e*xv**2)
-    #print Z
+
     # Density Calculation
     return ((p*Ma)/(Z*R*t))*(1 - xv*(1 - (Mv/Ma)))  # kg/m3

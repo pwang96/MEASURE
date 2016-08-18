@@ -63,10 +63,17 @@ class WorkdownUI(QObject):
             pass
 
     def click_ok(self):
-        self.main_dict['restraint vec'] = [int(i) for i in self.ui.restraintVecEdit.text().split(',')]
-        self.main_dict['check vec'] = [int(i) for i in self.ui.checkVecEdit.text().split(',')]
-        self.main_dict['report vec'] = [int(i) for i in self.ui.reportVecEdit.text().split(',')]
+        try:
+            # Try splitting by commas
+            self.main_dict['restraint vec'] = [int(i) for i in str(self.ui.restraintVecEdit.text()).split(',')]
+            self.main_dict['check vec'] = [int(i) for i in str(self.ui.checkVecEdit.text()).split(',')]
+            self.main_dict['report vec'] = [int(i) for i in str(self.ui.reportVecEdit.text()).split(',')]
 
+        except ValueError:
+            # Split by spaces otherwise
+            self.main_dict['restraint vec'] = [int(i) for i in str(self.ui.restraintVecEdit.text()).split()]
+            self.main_dict['check vec'] = [int(i) for i in str(self.ui.checkVecEdit.text()).split()]
+            self.main_dict['report vec'] = [int(i) for i in str(self.ui.reportVecEdit.text()).split()]
         print self.main_dict['restraint vec'], self.main_dict['check vec']
 
         self.__exit__()

@@ -110,8 +110,8 @@ class EditExistingWeightUI(QObject):
                                             self.ui.unitEdit.text(),
                                             self.ui.customerEdit.text(),
                                             self.ui.densityEdit.text(),
-                                            self.ui.densityUncEdit.text(),
-                                            self.ui.volExpEdit.text())
+                                            self.ui.volExpEdit.text(),
+                                            self.ui.densityUncEdit.text())
         self.update_event()
 
     def update_event(self):

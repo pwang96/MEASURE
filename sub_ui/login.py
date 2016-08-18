@@ -41,5 +41,6 @@ class LoginUi(QtGui.QDialog):
             self.close()
         else:
             ErrorMessage('Login failed')
+            self.db = None
 
 

@@ -39,7 +39,8 @@ def manual_short_command(signal, conn, command, status_string, string_arg='', ti
         print 'reading:', resp
         print 'timeout:', timeout
         if resp:
-
+            return resp
+        elif resp == 0.0 or float(resp) == 0.0:
             return resp
 
         timeout -= 1

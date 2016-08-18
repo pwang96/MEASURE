@@ -67,11 +67,13 @@ class ManualUI(QtGui.QWidget):
 
         # Populate the weights/positions table
         self.populate_reminder_table(cls)
+        self.ui.reminderTable.horizontalHeader().setStretchLastSection(True)
 
         # Construct the recent history table
         self.ui.historyTable.setColumnCount(4)
         self.ui.historyTable.setHorizontalHeaderLabels(["Measurement", "Temp", "Pressure", "Humidity"])
         self.ui.historyTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.ui.historyTable.horizontalHeader().setStretchLastSection(True)
 
         # Disable everything until the stabilization time has been set
         self.ui.readoutEdit.setEnabled(0)
@@ -191,6 +193,8 @@ class ManualUI(QtGui.QWidget):
                                              self.data_dict[runs[self.run-1]],
                                              1,
                                              len(self.data_dict.keys()))
+
+            # START OF NEW MASS CODE
             # Populate the massInfo dictionary based on the main_dict
             self.massInfo = populate_massInfo(self.main_dict, self.massInfo, False)
             # pretty(self.massInfo)
@@ -205,6 +209,7 @@ class ManualUI(QtGui.QWidget):
             # Create the json file
             json_file_path = generate_json_file(self.input_file_path, self.main_dict, self.data_dict, output)
             print json_file_path
+            # END OF NEW MASS CODE
 
             # Run input file
             command = '"%s" "%s" "%s"\n' % (str(masscode_path), str(input_file), str(output_file))
@@ -333,7 +338,6 @@ class ManualUI(QtGui.QWidget):
         self.ui.historyTable.setItem(row_num, 2, pressure)
         self.ui.historyTable.setItem(row_num, 3, humidity)
 
-
     def click_ok(self):
         # Enter the stabilization time
 
@@ -414,4 +418,5 @@ class ManualUI(QtGui.QWidget):
             pass
 
     def __exit__(self):
-        self.window.close()
+		QApplication.restoreOverrideCursor()
+		self.window.close()

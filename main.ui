@@ -303,6 +303,13 @@ p, li { white-space: pre-wrap; }
              <column/>
             </widget>
            </item>
+           <item row="5" column="2">
+            <widget class="QPushButton" name="removeButton">
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -690,6 +697,20 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="Misc">
+       <attribute name="title">
+        <string>Misc</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="airDensitySolverButton">
+          <property name="text">
+           <string>Air Density Solver</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
