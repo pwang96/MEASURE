@@ -550,6 +550,8 @@ class MainUI(QObject):
         app.quit()
 
 
+
+
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     app.setStyle("cleanlooks")

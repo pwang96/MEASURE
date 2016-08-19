@@ -7,7 +7,7 @@ path_to_masscode = r"L:\internal\684.07\Mass_Project\Software\Calibration Proces
 
 def run_old_masscode(input_path, output_path):
 
-    subprocess.call([path_to_masscode, input_path, output_path])
+    subprocess.call([path_to_masscode, str(input_path), str(output_path)])
 
 
 # input_path = r"L:\internal\684.07\Mass_Project\Software\PythonProjects\measure\testing\peter\runMasscode\lbseries4_2.ntxt"
